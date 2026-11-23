@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Museum of Ice Cream Digital Interactive Installations — Breanna Faye</title>
+<meta name="description" content="Digital interactive installations for Museum of Ice Cream in SoHo — DJ booth with light and sound, an augmented reality activation, and an animated flying subway car above Manhattan.">
+<link rel="stylesheet" href="project-page.css?v=moic-gal3">
+<style>
+  :root { --ground: #c99a9a; }
+</style>
+</head>
+<body>
+<svg class="grain" aria-hidden="true">
+  <filter id="paper" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#paper)"/>
+</svg>
+
+<div class="menu-wrap">
+  <button class="menu" type="button" aria-label="Back" aria-pressed="false">
+    <span class="back-tri" aria-hidden="true">
+      <svg viewBox="0 0 14 16">
+        <polygon points="14,0 0,8 14,16" fill="currentColor"/>
+      </svg>
+    </span>
+  </button>
+</div>
+
+<article id="page">
+  <img class="brand" src="media/logos/museum-ice-cream.webp" alt="Museum of Ice Cream">
+  <h1>Museum of Ice Cream Digital Interactive Installations</h1>
+  <p class="lede">A suite of digital interactives for Museum of Ice Cream in SoHo — a light-and-sound DJ booth, an augmented reality activation, and an animated flying subway car above Manhattan.</p>
+
+  <dl class="meta">
+    <div>
+      <dt>Client</dt>
+      <dd>Museum of Ice Cream</dd>
+    </div>
+    <div>
+      <dt>My Role</dt>
+      <dd>Design Lead, Project Owner (DIR)</dd>
+    </div>
+    <div>
+      <dt>Location</dt>
+      <dd>SoHo, NYC</dd>
+    </div>
+    <div>
+      <dt>Scope</dt>
+      <dd>Hardware, software &amp; AR interactives</dd>
+    </div>
+  </dl>
+
+  <section class="split">
+    <div>
+      <h2>Overview</h2>
+    </div>
+    <div class="body">
+      <p>I led the hardware and software design of an interactive DJ booth for the Museum of Ice Cream’s music room in SoHo. Guests become dueling DJs on real DJ controllers, mixing the music in their headphones while also controlling the room’s animated lighting.</p>
+      <p>The engagement also included an augmented reality activation for guests — digital layers that turn the pink museum into a place to pose with branded, ice-cream-twisted New York landmarks through their phones.</p>
+      <p>Alongside that, I designed an animated interactive of a flying subway car above Manhattan: a full pink “SKYBECA” car where windows and motion sell the fantasy of riding the subway through the sky over the city.</p>
+    </div>
+  </section>
+
+  <section class="split">
+    <div>
+      <h2>The Experience</h2>
+    </div>
+    <div class="process">
+      <div class="step">
+        <h4>Real controllers</h4>
+        <p>Guests use real turntable controllers to control playback of the music in their headphones.</p>
+      </div>
+      <div class="step">
+        <h4>One-to-one light</h4>
+        <p>The turntable also drives the room’s lighting in a direct one-to-one interaction: when a guest stops, slows down or speeds up the turntable, the light animations stop, slow down or speed up with it.</p>
+      </div>
+      <div class="step">
+        <h4>Dueling DJs</h4>
+        <p>Two stations let guests go head-to-head as dueling DJs, turning the room into a shared performance.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="split">
+    <div>
+      <h2>How It Works</h2>
+    </div>
+    <div class="process">
+      <div class="step">
+        <h4>Shared input stream</h4>
+        <p>Java/Processing reads the turntable data and sends it to two systems at once: VirtualDJ for audio playback and MadMapper for visuals.</p>
+      </div>
+      <div class="step">
+        <h4>Mapped motion</h4>
+        <p>In MadMapper, the turntable’s velocity and direction are mapped to the speed of the shaders.</p>
+      </div>
+      <div class="step">
+        <h4>Pixel-mapped LEDs</h4>
+        <p>The shaders are pixel-mapped onto LED bars made by MadMapper’s parent company.</p>
+      </div>
+      <div class="step">
+        <h4>Tight sync</h4>
+        <p>Because the audio and visuals share one input stream, the sound and light stay tightly in sync.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="split">
+    <div>
+      <h2>Design Focus</h2>
+    </div>
+    <div class="process">
+      <div class="step">
+        <h4>Instant feedback</h4>
+        <p>Every movement of the turntable has an immediate, visible effect, so guests understand how it works without instructions.</p>
+      </div>
+      <div class="step">
+        <h4>Real tools, playful use</h4>
+        <p>Professional DJ hardware gives the experience weight, while the lighting makes it fun for all ages.</p>
+      </div>
+      <div class="step">
+        <h4>Tested in the space</h4>
+        <p>Museum guides tested the interactive before launch.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="split">
+      <div>
+        <h2>Results</h2>
+      </div>
+      <div class="body">
+        <p>No data, just vibes on the DJ booth — kids and adults alike lit up at the decks, taking command of the room’s lights and energy while listening to their own remixed DJ sets.</p>
+        <p>The augmented reality activation drove measurable reach and ticket lift.</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">50k</div><div class="label">AR impressions in the first week</div></div>
+      <div class="stat"><div class="num">1M+</div><div class="label">AR impressions in 3 months</div></div>
+      <div class="stat"><div class="num">2k</div><div class="label">AR captures in the first week</div></div>
+      <div class="stat"><div class="num">17%</div><div class="label">Increase in ticket sales</div></div>
+    </div>
+  </section>
+
+  <section class="wide">
+    <div class="split">
+      <div>
+        <h2>Gallery</h2>
+        <p class="section-label">Installation &amp; AR views</p>
+      </div>
+      <div class="body">
+        <p>DJ booth, AR activation, and the flying subway — guests in the pink rooms of SoHo.</p>
+      </div>
+    </div>
+    <div class="gallery">
+      <figure class="shot">
+        <img src="media/moic/moic-01.gif" alt="Guest DJing on pink turntables in the Museum of Ice Cream music room">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-02.webp" alt="Two performers at matching pink DJ stations with neon light bars behind them">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-03.jpg" alt="Close-up of a hand on a pink turntable labeled Spin me">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-04.png" alt="Kids interacting with colorful DJ decks at Museum of Ice Cream installations">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-05.png" alt="I heart NY photo moment and AR Statue of Liberty with ice cream cone beside the sprinkle pool">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-06.png" alt="Phone screens from the Museum of Ice Cream augmented reality activation with Statue of Liberty">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-07.png" alt="Pink SKYBECA flying subway car interior above Manhattan">
+      </figure>
+      <figure class="shot">
+        <img src="media/moic/moic-08.jpg" alt="DJ at pink turntables with neon equalizer light bars behind the booth">
+      </figure>
+    </div>
+  </section>
+
+  <footer>
+    Work completed for Museum of Ice Cream, SoHo, NYC.
+  </footer>
+</article>
+
+<div id="cursor" aria-hidden="true">
+  <svg viewBox="0 0 31.1769 18" width="38.105" height="22">
+    <polygon points="0,0 31.1769,0 31.1769,18" fill="currentColor"/>
+  </svg>
+</div>
+
+<script src="project-page.js?v=white-tri"></script>
+</body>
+</html>

@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breanna Faye</title>
+<style>
+  :root {
+    --ground: #a4988a;
+    --ink: #2a2521;
+    --plate: #b6aa9c;
+    --d: min(calc((100vw - 72px) / 7.984), calc((100vh - 36px) / 4.492));
+    --gap: calc(var(--d) * 0.164);
+  }
+
+  * { box-sizing: border-box; cursor: none !important; }
+
+  html {
+    scrollbar-gutter: stable;
+    scrollbar-width: none; /* Firefox — hide bar, keep gutter/layout */
+  }
+
+  html::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--ground);
+    color: var(--ink);
+  }
+
+  body {
+    font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 1.35;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    user-select: none;
+    scrollbar-width: none;
+  }
+
+  body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  .grain {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+  }
+
+  main {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #home-run {
+    height: 200vh;
+    pointer-events: none;
+  }
+
+  #home-quote {
+    position: fixed;
+    inset: 0;
+    z-index: 33;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  #home-quote[hidden] { display: none; }
+
+  .home-quote-inner {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: max-content;
+    max-width: 96vw;
+    transform: translate(-50%, 100vh);
+    will-change: transform, opacity;
+    color: var(--ink);
+    text-align: center;
+    opacity: 1;
+  }
+
+  .home-quote-text {
+    margin: 0 auto;
+    font-size: 120pt;
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.02em;
+    text-align: center;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: keep-all;
+    hyphens: none;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, var(--d));
+    gap: var(--gap);
+  }
+
+  .cell {
+    position: relative;
+    width: var(--d);
+    height: var(--d);
+  }
+
+  .cell.open { z-index: 5; }
+
+  .cell.menu-cell,
+  .cell.menu-cell.open { z-index: 38; }
+
+  button {
+    font: inherit;
+    color: inherit;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .circle {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--c);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .piece { transition: background-color 180ms ease; }
+  .piece.hot { background: var(--h); }
+
+  .menu::before,
+  .wake::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-size: 240% 240%;
+    background-position: 0% 40%;
+    opacity: 1;
+    animation: menu-wash 18s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .menu::before {
+    background-image: linear-gradient(
+      128deg,
+      #7f342a 0%,
+      #ba4632 34%,
+      #c48472 58%,
+      #8f3d32 80%,
+      #b25a48 100%
+    );
+  }
+
+  .wake {
+    --c: #2f4a62;
+    --h: #3d5c78;
+    background: #2f4a62;
+    color: #f4f0e8;
+  }
+
+  .wake::before {
+    background-image: linear-gradient(
+      128deg,
+      #1c3144 0%,
+      #2f4a62 34%,
+      #5a738a 58%,
+      #243d52 80%,
+      #3d5c78 100%
+    );
+  }
+
+  @keyframes menu-wash {
+    0% { background-position: 0% 32%; }
+    50% { background-position: 100% 68%; }
+    100% { background-position: 0% 32%; }
+  }
+
+  /* First-load gate: only red menu + blue wake visible (layout space preserved) */
+  body.gate .grid .cell:not(.menu-cell):not(.wake-cell) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body.gate .grid .cell:not(.menu-cell):not(.wake-cell) .piece {
+    visibility: hidden;
+  }
+
+  body.gate #tools,
+  body.gate #score,
+  body.gate #home-quote,
+  body.gate .note {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+  }
+
+  body.gate #home-run {
+    height: 0 !important;
+  }
+
+  /* Keep scrollbar gutter so fixed grid does not shift vs full homescreen */
+  body.gate {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .wake-cell {
+    z-index: 37;
+  }
+
+  #home-end,
+  #home-truth {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.8rem;
+    padding: 8vw;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 900ms ease;
+  }
+
+  #home-end.on,
+  #home-truth.on {
+    opacity: 1;
+  }
+
+  #home-end[hidden],
+  #home-truth[hidden] { display: none; }
+
+  .home-end-text {
+    margin: 0;
+    max-width: 18em;
+    font-size: 100pt;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: var(--ink);
+  }
+
+  .home-end-choices {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    pointer-events: auto;
+  }
+
+  .home-end-choice {
+    width: 108px;
+    height: 108px;
+    border: 0;
+    padding: 14px;
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: #f4f0e8;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .home-end-choice::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-size: 240% 240%;
+    background-position: 0% 40%;
+    opacity: 1;
+    animation: menu-wash 18s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .home-end-choice.begin {
+    background: #ba4632;
+  }
+
+  .home-end-choice.begin::before {
+    background-image: linear-gradient(
+      128deg,
+      #7f342a 0%,
+      #ba4632 34%,
+      #c48472 58%,
+      #8f3d32 80%,
+      #b25a48 100%
+    );
+  }
+
+  .home-end-choice.end {
+    background: #2f4a62;
+  }
+
+  .home-end-choice.end::before {
+    background-image: linear-gradient(
+      128deg,
+      #1c3144 0%,
+      #2f4a62 34%,
+      #5a738a 58%,
+      #243d52 80%,
+      #3d5c78 100%
+    );
+  }
+
+  .home-end-choice > span {
+    position: relative;
+    z-index: 1;
+    display: block;
+  }
+
+  .home-end-choice:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  #home-blackout {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 900ms ease;
+  }
+
+  #home-blackout.on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #home-blackout[hidden] { display: none; }
+
+  body.truth .menu-cell,
+  body.truth .wake-cell,
+  body.ending .menu-cell,
+  body.ending .wake-cell {
+    opacity: 0;
+    transition: opacity 900ms ease;
+    pointer-events: none;
+  }
+
+  body.truth .grid .cell:not(.menu-cell):not(.wake-cell) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body.truth #tools,
+  body.truth #score,
+  body.truth #home-quote,
+  body.truth #home-run,
+  body.truth .note {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body.reveal .grid .cell {
+    animation: home-cell-in 900ms ease both;
+  }
+
+  body.reveal #tools {
+    animation: home-cell-in 900ms ease both;
+  }
+
+  @keyframes home-cell-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  body.ending #tools,
+  body.ending #score,
+  body.ending #home-quote,
+  body.ending #home-run,
+  body.ending .note {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body.ending {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body.ending .grid .cell:not(.menu-cell):not(.wake-cell) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .cell.on-dark { color: #f4f0e8; }
+
+  .caption {
+    position: absolute;
+    inset: 18%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+  }
+
+  .piece.hot .caption { opacity: 1; }
+  .piece.bio-open .caption { opacity: 0; }
+
+  .caption .t,
+  .caption .d {
+    display: block;
+    font-weight: 400;
+    font-style: normal;
+    color: inherit;
+  }
+
+  .caption .t {
+    font-size: calc(var(--d) * 0.05);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.25;
+  }
+
+  .caption .d {
+    margin-top: 0.28em;
+    font-size: calc(var(--d) * 0.048);
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+  }
+
+  .project .caption .t {
+    text-transform: none;
+    letter-spacing: 0.01em;
+    font-size: calc(var(--d) * 0.052);
+    line-height: 1.25;
+  }
+
+  /* Project hover: washing gradient (same motion as red menu), no image backdrop */
+  .project::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-image: linear-gradient(
+      128deg,
+      color-mix(in srgb, var(--c) 72%, #2a2521) 0%,
+      var(--c) 28%,
+      var(--h) 52%,
+      color-mix(in srgb, var(--h) 70%, #f4f0e8) 74%,
+      color-mix(in srgb, var(--c) 55%, var(--h)) 100%
+    );
+    background-size: 240% 240%;
+    background-position: 0% 40%;
+    opacity: 0;
+    transition: opacity 160ms ease;
+    animation: none;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .project.hot::before {
+    opacity: 1;
+    animation: menu-wash 18s ease-in-out infinite;
+  }
+
+  .project-cover {
+    display: none;
+  }
+
+  .about-host .bio {
+    z-index: 1;
+  }
+
+  /* Portrait only during About — translucent, left of About text */
+  .about-portrait::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-image: url("media/about/breanna-portrait.jpg");
+    background-size: cover;
+    background-position: center 42%;
+    background-repeat: no-repeat;
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .project .caption {
+    z-index: 2;
+  }
+
+  .drop {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45em;
+    margin: 0;
+    padding: 18%;
+    border-radius: 50%;
+    overflow: hidden;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .drop[hidden] { display: none; }
+
+  /* Gate/truth: red circle has no menu CTAs until homescreen unlock */
+  body.gate .drop,
+  body.truth .drop,
+  body:not(.unlocked) .drop {
+    display: none !important;
+  }
+
+  .drop span[hidden] { display: none; }
+
+  .drop span {
+    display: block;
+    font-size: calc(var(--d) * 0.05);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: inherit;
+    text-align: center;
+  }
+
+  .drop .about-item,
+  .drop .contact-item,
+  .drop .home-item,
+  .drop .work-item,
+  .drop .poem-item { pointer-events: auto; }
+
+  .grid .piece { transition: opacity 240ms ease; }
+
+  body.work-on .grid .piece:not(.project):not(.clearing) { opacity: 0.2; }
+
+  body.work-on .grid .piece.project:not(.clearing) {
+    opacity: 1;
+  }
+
+  body.work-on .grid .piece.project .caption { opacity: 1; }
+
+  /* About mode: logos + About text + portrait only — hide poems & work */
+  body.about-on .grid .piece:not(.menu):not(.about-host):not(.about-more):not(.about-step):not(.about-last):not(.about-portrait):not(.client-note):not(.client-logo) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  body.about-on .project .caption,
+  body.about-on .project.hot .caption,
+  body.about-on .poem .caption,
+  body.about-on .poem.hot .caption {
+    opacity: 0 !important;
+  }
+
+  body.about-on .project:not(.about-portrait)::before,
+  body.about-on .project.hot:not(.about-portrait)::before,
+  body.about-on .poem::before {
+    opacity: 0 !important;
+    animation: none !important;
+  }
+
+  body.poem-on .grid .piece:not(.poem):not(.clearing) { opacity: 0.2; }
+
+  body.poem-on .grid .cell:has(.poem) { z-index: 20; }
+
+  body.poem-on .grid .cell:has(.poem.hot) { z-index: 32; }
+
+  body.poem-on .grid .piece.poem:not(.clearing) {
+    opacity: 1;
+    z-index: 2;
+  }
+
+  body.poem-on .grid .piece.poem.hot {
+    z-index: 5;
+  }
+
+  body.poem-on .grid .piece.poem .caption { opacity: 1; }
+
+  body.poem-on #tools,
+  body.poem-on #score,
+  body.poem-on .note { opacity: 0.2; }
+
+  body.poem-on .menu,
+  body.poem-on .menu-cell { opacity: 1; }
+
+  .poem .poem-title {
+    display: block;
+    margin-bottom: 0.45em;
+    font-size: calc(var(--d) * 0.048);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-transform: none;
+  }
+
+  .poem .poem-lines {
+    display: block;
+    font-size: calc(var(--d) * 0.046);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.35;
+    text-transform: none;
+    white-space: pre-wrap;
+  }
+
+  .cell.poem-fit { z-index: 12; }
+
+  .cell:has(.poem.hot) { z-index: 32; }
+
+  .piece.poem-fit {
+    position: relative;
+    z-index: 3;
+    width: var(--poem-size);
+    height: var(--poem-size);
+    margin-left: calc((var(--d) - var(--poem-size)) / 2);
+    margin-top: calc((var(--d) - var(--poem-size)) / 2);
+  }
+
+  .cell.bio-open { z-index: 6; }
+
+  .piece.bio-open {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 50%;
+    width: var(--bio-size);
+    height: var(--bio-size);
+    transform: translate(-50%, -50%);
+  }
+
+  .bio {
+    display: none;
+    position: absolute;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .piece.bio-open .bio { display: flex; }
+
+  .bio-more {
+    display: block;
+    width: 14px;
+    height: 12px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--ink);
+    line-height: 0;
+  }
+
+  .piece.bio-open .bio-more {
+    position: absolute;
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+  }
+
+  .bio-more svg {
+    display: block;
+    width: 14px;
+    height: 12px;
+  }
+
+  .piece.about-more .caption,
+  .piece.about-portrait .caption,
+  .piece.client-note .caption,
+  .piece.client-logo .caption { opacity: 0; }
+
+  body.poem-on .grid .piece.client-note .caption,
+  body.poem-on .grid .piece.client-logo .caption { opacity: 0; }
+
+  .piece.about-more .about-next,
+  .piece.client-note .about-next { display: flex; }
+
+  .piece.client-logo,
+  .piece.client-logo.hot { background: #fff; }
+
+  .piece.client-reveal {
+    opacity: 0;
+    transition: opacity 320ms ease;
+  }
+
+  .piece.client-reveal.is-in {
+    opacity: 1;
+  }
+
+  .logo-img {
+    position: absolute;
+    left: 16%;
+    top: 16%;
+    width: 68%;
+    height: 68%;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cell.about-next { z-index: 7; }
+
+  .cell.about-third { z-index: 8; }
+
+  .bio-copy {
+    display: block;
+    width: 70%;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+  }
+
+  #tools {
+    position: fixed;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    background: #b7ab9e;
+    color: var(--ink);
+  }
+
+  .tool-row { position: relative; }
+
+  .tool,
+  .send,
+  .note-x {
+    display: grid;
+    place-items: center;
+    background: transparent;
+    color: inherit;
+  }
+
+  .note-x {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .tool {
+    width: 34px;
+    height: 34px;
+  }
+
+  .tool[aria-pressed="true"] { background: #9c9084; }
+
+  .tool svg,
+  .send svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  .swatches {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 16px);
+    gap: 8px;
+    padding: 8px;
+    background: #b7ab9e;
+  }
+
+  .swatches[hidden] { display: none; }
+
+  .swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--c);
+    padding: 0;
+  }
+
+  .swatch[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--ink); }
+
+  .note {
+    position: fixed;
+    z-index: 39;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    height: 260px;
+    padding: 34px 16px 14px;
+    background: #e6d7be;
+    color: var(--ink);
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .send,
+  .note-x {
+    position: absolute;
+    top: 8px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .send { right: 8px; }
+
+  .note-x { left: 8px; right: auto; }
+
+  .note.holding { pointer-events: none; }
+
+  .note.holding .note-x { pointer-events: auto; }
+
+  .note.sent .send {
+    width: auto;
+    right: 12px;
+    padding: 0 2px;
+  }
+
+  .send:disabled { opacity: 1; }
+
+  .sent-word {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .email-line {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+    margin: 0 0 6px;
+  }
+
+  .email-line span {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .note input,
+  .note textarea {
+    font: inherit;
+    font-size: 13px;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    outline: none;
+    user-select: text;
+  }
+
+  .note input {
+    width: 100%;
+    border-bottom: 1px solid rgba(42, 37, 33, 0.28);
+    padding-bottom: 3px;
+  }
+
+  .note textarea {
+    display: block;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    resize: none;
+    line-height: 1.35;
+  }
+
+  .note .email-line.from-line {
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  .note.sent input,
+  .note.sent textarea { pointer-events: none; }
+
+  .circle.clearing {
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 260ms ease, transform 260ms ease;
+    pointer-events: none;
+  }
+
+  #score {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    z-index: 34;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 18px 9px;
+    background: #b7ab9e;
+    color: var(--ink);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  #score[hidden] { display: none; }
+
+  #score b {
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: 0.04em;
+  }
+
+  #score-gain { letter-spacing: 0.08em; }
+
+  #project {
+    position: fixed;
+    inset: 0;
+    z-index: 36;
+    overflow: auto;
+    padding: 28px 56px 120px calc((100vw - (7 * var(--d) + 6 * var(--gap))) / 2 + var(--d) + 36px);
+    background: #9da17d;
+    color: var(--ink);
+  }
+
+  #project[hidden] { display: none; }
+
+  #project-back {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 2;
+    width: 14px;
+    height: 16px;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    line-height: 0;
+  }
+
+  #project-back svg {
+    display: block;
+    width: 14px;
+    height: 16px;
+  }
+
+  #project h1 {
+    max-width: 18em;
+    margin: 22px 0 28px;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+  }
+
+  .project-copy {
+    margin: 0;
+    max-width: 38em;
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 520px));
+    gap: 72px 56px;
+    max-width: 1096px;
+    margin: 84px 0 28px;
+  }
+
+  .macbook {
+    margin: 0;
+    filter: drop-shadow(0 26px 18px rgba(42, 36, 28, 0.16));
+  }
+
+  .macbook-lid {
+    position: relative;
+    background: #161616;
+    border-radius: 14px 14px 0 0;
+    padding: 18px 12px 14px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+
+  .macbook-cam {
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    border-radius: 50%;
+    background: #2c2e30;
+    box-shadow: 0 0 0 1px #070707;
+  }
+
+  .macbook-screen {
+    overflow: hidden;
+    background: #000;
+    line-height: 0;
+  }
+
+  .macbook-screen img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .macbook-screen.is-crop {
+    aspect-ratio: 576 / 318;
+  }
+
+  .macbook-screen.is-crop img {
+    width: 163.889%;
+    max-width: none;
+    margin-left: -34.028%;
+    margin-top: -42.535%;
+  }
+
+  .macbook-base {
+    position: relative;
+    height: 9px;
+    background: #6a6d70;
+  }
+
+  .macbook-base::after {
+    content: "";
+    position: absolute;
+    left: -3.4%;
+    right: -3.4%;
+    top: 3px;
+    height: 13px;
+    border-radius: 0 0 14px 14px;
+    background: linear-gradient(180deg, #c8c9cb 0%, #f3f3f4 46%, #a9abae 100%);
+  }
+
+  #cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0;
+    color: #142e32;
+    line-height: 0;
+  }
+
+  #cursor.carried { opacity: 0 !important; }
+</style>
+</head>
+<body class="gate">
+<svg class="grain" aria-hidden="true">
+  <filter id="paper" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#paper)"/>
+</svg>
+
+<main>
+  <section class="grid" aria-label="Work">
+    <div class="cell on-dark menu-cell">
+      <button class="circle toggle menu" type="button" data-c="#ba4632" style="--c:#ba4632" aria-expanded="false" aria-haspopup="true" aria-label="Menu"></button>
+      <div class="drop" hidden>
+        <span class="home-item" hidden>Home</span>
+        <span class="about-item">About</span>
+        <span class="work-item">Work</span>
+        <span class="poem-item">Poems</span>
+        <span class="contact-item">Contact</span>
+      </div>
+    </div>
+    <div class="cell"><div class="circle piece about-host" data-c="#909aa9" data-h="#a8b2c1" style="--c:#909aa9;--h:#a8b2c1"><span class="bio"><span class="bio-copy">I’m Breanna, a designer &amp; product leader specializing in emerging technologies, innovative products &amp; multi-modal, human-centered, AI-empowered design for agents, robots, and the people they serve</span></span></div></div>
+    <div class="cell"><div class="circle piece project" data-c="#dbbba4" data-h="#c5a58e" data-href="mona.html" style="--c:#dbbba4;--h:#c5a58e"><span class="caption"><span class="t">MONA: Web3 3D Creator Platform and Marketplace</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#d6cbbc" data-h="#c0b5a6" style="--c:#d6cbbc;--h:#c0b5a6"><span class="caption"><span class="poem-lines">The reality of it all is that it was all a dream</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c9a56e" data-h="#e1bd86" style="--c:#c9a56e;--h:#e1bd86"><span class="caption"><span class="poem-lines">We romanticize stars as if they don’t have the power to combust us into oblivion; as if, were we any closer, they would not burn us alive.</span></span></div></div>
+    <div class="cell"><div class="circle piece project" data-c="#c3927d" data-h="#dbaa95" data-href="https://www.ingredientpals.com/" style="--c:#c3927d;--h:#dbaa95"><span class="caption"><span class="t">Ingredient Pals</span></span></div></div>
+    <div class="cell"><div class="circle piece" data-c="#d6cbbc" data-h="#c0b5a6" style="--c:#d6cbbc;--h:#c0b5a6"></div></div>
+
+    <div class="cell"><div class="circle piece project" data-c="#9da17d" data-h="#b5b995" data-href="citi-ventures.html" style="--c:#9da17d;--h:#b5b995"><span class="caption"><span class="t">Citi Ventures D10x Accelerator</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c09da4" data-h="#aa878e" style="--c:#c09da4;--h:#aa878e"><span class="caption"><span class="poem-title">Blockchange</span><span class="poem-lines">Imagine how much different the world would be if our hearts were open books - if we no longer hid our feelings in closets and cupboards. Imagine if our thoughts, ideas and emotions were completely traceable and transparent - logged and linear as if we were the living, breathing blockchain of ourselves. Imagine how it would change things. How it would change us.</span></span></div></div>
+    <div class="cell"><div class="circle piece project" data-c="#909aa9" data-h="#a8b2c1" data-href="webai.html" style="--c:#909aa9;--h:#a8b2c1"><span class="caption"><span class="t">webAI Local AI App</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#709a95" data-h="#88b2ad" style="--c:#709a95;--h:#88b2ad"><span class="caption"><span class="poem-lines">I am neither coming nor going
+I am staying for the love that was inside me all along</span></span></div></div>
+    <div class="cell"><div class="circle piece project" data-c="#dbbba4" data-h="#c5a58e" data-href="webai-frontline.html" style="--c:#dbbba4;--h:#c5a58e"><span class="caption"><span class="t">webAI Frontline</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#9da17d" data-h="#b5b995" style="--c:#9da17d;--h:#b5b995"><span class="caption"><span class="poem-title">Find Me</span><span class="poem-lines">..-. .. -. -.. / -- .
+.. / --- -. .-.. -.-- / .-- .- -. - . -.. / -.-- --- ..- / - --- / ..-. .. -. -.. / -- .</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c9a56e" data-h="#e1bd86" style="--c:#c9a56e;--h:#e1bd86"><span class="caption"><span class="poem-lines">We are but a small fraction of the collective energy of the universe and everything in it.</span></span></div></div>
+
+    <div class="cell above"><div class="circle piece project about-portrait-slot" data-c="#9da17d" data-h="#b5b995" data-href="city-2020.html" style="--c:#9da17d;--h:#b5b995"><span class="caption"><span class="t">City 2020: Envisioning the Smart City for Samsung</span></span></div></div>
+    <div class="cell above"><div class="circle piece" data-c="#dbbba4" data-h="#c5a58e" style="--c:#dbbba4;--h:#c5a58e"></div></div>
+    <div class="cell above"><div class="circle piece" data-c="#d6cbbc" data-h="#c0b5a6" style="--c:#d6cbbc;--h:#c0b5a6"></div></div>
+    <div class="cell above"><div class="circle piece poem" data-c="#9da17d" data-h="#b5b995" style="--c:#9da17d;--h:#b5b995"><span class="caption"><span class="poem-lines">Sometimes I think about
+Curiously nonsensical things 
+Like how the galaxy looks down on our oceans 
+and sees a helpless cup of water to quench its temporary thirst 
+And if we’re the only blue planet near here I imagine 
+sometimes God washes His hands in the middle of the Pacific
+Whereas the blue globe of oceans to us is this  incomprehensible thing
+Too complex to understand 
+Too immense to be vulnerable 
+Too vast to take care of 
+But our tears have to go 
+somewhere 
+And our hearts have to tear 
+sometimes 
+And our lives have to mean 
+something 
+Some Thing or Being tells me we’re not alone in this,
+Even though every day 
+that’s what I go home to
+While praying these minutes and hours and years collected 
+End up a mere fraction of the chances we get 
+to accomplish what it was we set off to do 
+Wishing on burning stars we already know 
+died one by one a thousand years ago</span></span></div></div>
+    <div class="cell above"><div class="circle piece" data-c="#c9a56e" data-h="#e1bd86" style="--c:#c9a56e;--h:#e1bd86"></div></div>
+    <div class="cell above"><div class="circle piece project" data-c="#c99a9a" data-h="#b38484" data-href="moic-dj.html" style="--c:#c99a9a;--h:#b38484"><span class="caption"><span class="t">Museum of Ice Cream Digital Interactive Installations</span></span></div></div>
+    <div class="cell above"><div class="circle piece poem" data-c="#709a95" data-h="#88b2ad" style="--c:#709a95;--h:#88b2ad"><span class="caption"><span class="poem-title">White Pages</span><span class="poem-lines">Where there are white pages, 
+may you find words.
+Words that walk you through 
+what may be hard to do - 
+Through bare feet on fired coals
+Ice shards and sleet that cut to the soul
+And through those who are careless with hearts
+ Juggling pumping organs in the path between your body 
+and where you need to be.
+May you find the words that lead you
+through an unlocked door
+An open window
+Between you and another,
+ willing to love.</span></span></div></div>
+
+    <div class="cell"><div class="circle piece poem" data-c="#d6cbbc" data-h="#c0b5a6" style="--c:#d6cbbc;--h:#c0b5a6"><span class="caption"><span class="poem-title">Washington Sq Pk</span><span class="poem-lines">There’s something beautifully volatile about the way we love -
+tragically fragile and profoundly complex
+utterly confusing when all it wants is to be is easy and understood.
+If I find a way to put it down in words someday
+maybe you’ll find them in a dusty hardback jacket
+in some forgotten bookstore
+ on a cobblestone street in a back alley.
+And even if my name’s not there
+you’ll somehow know it’s me.</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c09da4" data-h="#aa878e" style="--c:#c09da4;--h:#aa878e"><span class="caption"><span class="poem-title">Aspen</span><span class="poem-lines">I came here for truth and found poetry
+I look upon these mountains with tenderness
+these great pines with fondness
+and refuse to carry weighings of no importance into these calm winds.
+I will worship these still and rushing waters 
+- this lake house on a river -
+and practice gratitude in the company of strangers 
+meant to be friends</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c3927d" data-h="#dbaa95" style="--c:#c3927d;--h:#dbaa95"><span class="caption"><span class="poem-lines">The closest Ive ever felt to a rainbow
+The farthest Ive ever felt from the shore</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c09da4" data-h="#aa878e" style="--c:#c09da4;--h:#aa878e"><span class="caption"><span class="poem-lines">Sweet wine works its way down a dark tunnel parallel to the spine. It may fill you up but it won’t keep you full for long. But sweet words can make meaning from the meritless. And carry us beyond customary, long after the sensation of intoxication fades away.</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#909aa9" data-h="#a8b2c1" style="--c:#909aa9;--h:#a8b2c1"><span class="caption"><span class="poem-title">Intelligences</span><span class="poem-lines">We dig, towards our own peril with grace
+Hands deep into the mud
+Fingernail tips tap
+Molding slop like eloquently thrown clay
+Hardened to the light that pseudo 
+Intelligences bring 
+One click, instant 
+A few good words, 
+A few thousand tasks…
+And now machines sing</span></span></div></div>
+    <div class="cell"><div class="circle piece poem" data-c="#c3927d" data-h="#dbaa95" style="--c:#c3927d;--h:#dbaa95"><span class="caption"><span class="poem-lines">The first step to realizing your wish is to say it out loud</span></span></div></div>
+    <div class="cell wake-cell"><div class="circle piece wake" data-c="#7f948c" data-h="#9aada6" data-base="#7f948c" data-base-h="#9aada6" style="--c:#2f4a62;--h:#3d5c78" role="button" tabindex="0" aria-label="Wake"></div></div>
+  </section>
+</main>
+<div id="home-run" aria-hidden="true"></div>
+
+<div id="home-quote" aria-hidden="true">
+  <div class="home-quote-inner">
+    <p class="home-quote-text">Are we all just algorithms
+doing what we're supposed to do
+or can we escape
+our programming?</p>
+  </div>
+</div>
+
+<div id="home-truth" hidden aria-live="polite">
+  <p class="home-end-text">All I’m offering is the truth. Nothing more.</p>
+</div>
+
+<div id="home-end" hidden aria-live="polite">
+  <p class="home-end-text home-end-prompt">Make a choice.</p>
+  <p class="home-end-text home-end-matrix" hidden>The story ends. You wake up in your bed and believe whatever you want to believe.</p>
+  <div class="home-end-choices">
+    <button type="button" class="home-end-choice begin" aria-label="Story begins"><span>story<br>begins</span></button>
+    <button type="button" class="home-end-choice end" aria-label="Story ends"><span>story<br>ends</span></button>
+  </div>
+</div>
+
+<div id="home-blackout" hidden aria-hidden="true"></div>
+
+<aside id="tools" aria-label="Tools">
+  <div class="tool-row">
+    <button type="button" class="tool" data-tool="paint" aria-pressed="false" aria-label="Paint">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14.2 4.2l5.6 5.6-8.8 8.8H5.4v-5.6l8.8-8.8z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M13 6.2l4.8 4.8" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M4.6 19.2c1.4-1.6 2.6-1.8 4.2-1.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="swatches" hidden>
+      <button type="button" class="swatch" data-color="#d6cbbc" style="--c:#d6cbbc" aria-pressed="true" aria-label="Cream"></button>
+      <button type="button" class="swatch" data-color="#9da17d" style="--c:#9da17d" aria-pressed="false" aria-label="Sage"></button>
+      <button type="button" class="swatch" data-color="#dbbba4" style="--c:#dbbba4" aria-pressed="false" aria-label="Peach"></button>
+      <button type="button" class="swatch" data-color="#909aa9" style="--c:#909aa9" aria-pressed="false" aria-label="Slate"></button>
+      <button type="button" class="swatch" data-color="#c3927d" style="--c:#c3927d" aria-pressed="false" aria-label="Clay"></button>
+      <button type="button" class="swatch" data-color="#c9a56e" style="--c:#c9a56e" aria-pressed="false" aria-label="Gold"></button>
+      <button type="button" class="swatch" data-color="#709a95" style="--c:#709a95" aria-pressed="false" aria-label="Teal"></button>
+      <button type="button" class="swatch" data-color="#c09da4" style="--c:#c09da4" aria-pressed="false" aria-label="Mauve"></button>
+    </div>
+  </div>
+  <button type="button" class="tool" data-tool="note" aria-pressed="false" aria-label="Post-it">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="5" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    </svg>
+  </button>
+</aside>
+
+<div id="score" hidden>
+  <span>Score</span>
+  <b id="score-value">0</b>
+  <span id="score-gain"></span>
+</div>
+
+<section id="project" hidden>
+  <button type="button" id="project-back" aria-label="Back">
+    <svg viewBox="0 0 14 16" aria-hidden="true">
+      <polygon points="14,0 0,8 14,16" fill="currentColor"/>
+    </svg>
+  </button>
+  <h1>MONA: Web3 3D Creator Platform and Marketplace</h1>
+  <p class="project-copy">MONA is a blockchain-powered 3D creator
+platform and marketplace designed to
+empower artists, game developers, and
+digital creators to seamlessly build,
+customize, and monetize immersive virtual
+experiences. The product ecosystem
+includes a digital asset marketplace (NFTs), a
+multiplayer online 3D metaverse, and a
+Unity-powered 3D creation tool that enables
+users to easily design, play, and own their
+own virtual worlds.
+
+Through extensive product mapping and
+user research, we identified a need for a
+low-barrier, creator-friendly toolset that
+removes the complexity of traditional 3D
+development. This led to the development of
+MONA Create: a powerful, intuitive worldbuilding
+platform that allows creators to craft
+interactive multiplayer experiences without
+requiring advanced Unity or development
+expertise. Whether for virtual events, social
+gaming, or digital art exhibitions, MONA
+enables anyone to participate in the
+metaverse economy with ease.</p>
+  <div class="screens">
+    <figure class="macbook">
+      <div class="macbook-lid">
+        <span class="macbook-cam" aria-hidden="true"></span>
+        <div class="macbook-screen is-crop">
+          <img src="media/mona/mona-01.png" alt="The Flux Gallery in the MONA editor, with the asset inspector open">
+        </div>
+      </div>
+      <div class="macbook-base" aria-hidden="true"></div>
+    </figure>
+    <figure class="macbook">
+      <div class="macbook-lid">
+        <span class="macbook-cam" aria-hidden="true"></span>
+        <div class="macbook-screen">
+          <img src="media/mona/mona-02.png" alt="Adding shapes inside a plywood studio space">
+        </div>
+      </div>
+      <div class="macbook-base" aria-hidden="true"></div>
+    </figure>
+    <figure class="macbook">
+      <div class="macbook-lid">
+        <span class="macbook-cam" aria-hidden="true"></span>
+        <div class="macbook-screen">
+          <img src="media/mona/mona-03.png" alt="A space loading, with a note to publish edits">
+        </div>
+      </div>
+      <div class="macbook-base" aria-hidden="true"></div>
+    </figure>
+    <figure class="macbook">
+      <div class="macbook-lid">
+        <span class="macbook-cam" aria-hidden="true"></span>
+        <div class="macbook-screen">
+          <img src="media/mona/mona-04.png" alt="Connecting a wallet beside the Telstar Art Gallery">
+        </div>
+      </div>
+      <div class="macbook-base" aria-hidden="true"></div>
+    </figure>
+    <figure class="macbook">
+      <div class="macbook-lid">
+        <span class="macbook-cam" aria-hidden="true"></span>
+        <div class="macbook-screen">
+          <img src="media/mona/mona-05.png" alt="Space performance, with assets and memory use">
+        </div>
+      </div>
+      <div class="macbook-base" aria-hidden="true"></div>
+    </figure>
+    <figure class="macbook">
+      <div class="macbook-lid">
+        <span class="macbook-cam" aria-hidden="true"></span>
+        <div class="macbook-screen">
+          <img src="media/mona/mona-06.png" alt="Published spaces, including Studio Corb and Tag-3">
+        </div>
+      </div>
+      <div class="macbook-base" aria-hidden="true"></div>
+    </figure>
+  </div>
+</section>
+
+<div id="cursor" aria-hidden="true">
+  <svg viewBox="0 0 31.1769 18" width="38.105" height="22">
+    <polygon points="0,0 31.1769,0 31.1769,18" fill="currentColor"/>
+  </svg>
+</div>
+
+<script>
+(function () {
+  var cursor = document.getElementById('cursor');
+  var GROUND = [164, 152, 138];
+  var PALETTE = [[20, 46, 50], [244, 240, 232], [42, 36, 32]];
+  var hot = null;
+
+  function hexToRgb(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function contrast(rgb) {
+    var best = PALETTE[0];
+    var bestD = -1;
+    for (var i = 0; i < PALETTE.length; i++) {
+      var c = PALETTE[i];
+      var dr = rgb[0] - c[0];
+      var dg = rgb[1] - c[1];
+      var db = rgb[2] - c[2];
+      var d = dr * dr + dg * dg + db * db;
+      if (d > bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    return 'rgb(' + best[0] + ',' + best[1] + ',' + best[2] + ')';
+  }
+
+  function insideDisk(el, x, y) {
+    var r = el.getBoundingClientRect();
+    var dx = x - (r.left + r.width / 2);
+    var dy = y - (r.top + r.height / 2);
+    var rad = r.width / 2;
+    return dx * dx + dy * dy <= rad * rad;
+  }
+
+  function setHot(el) {
+    if (hot === el) return;
+    if (hot) {
+      hot.classList.remove('hot');
+      if (!document.body.classList.contains('poem-on')) clearPoemFit(hot);
+    }
+    hot = el;
+    if (hot) {
+      hot.classList.add('hot');
+      if (hot.classList.contains('poem')) fitPoem(hot);
+    }
+  }
+
+  function fitPoem(piece) {
+    var cell = piece.closest('.cell');
+    var caption = piece.querySelector('.caption');
+    if (!cell || !caption) return;
+    var size = cell.offsetWidth;
+    if (caption.scrollHeight <= caption.clientHeight + 1 && caption.scrollWidth <= caption.clientWidth + 1) return;
+    piece.classList.add('poem-fit');
+    cell.classList.add('poem-fit');
+    var guard = 0;
+    while (guard < 40) {
+      piece.style.setProperty('--poem-size', size + 'px');
+      if (caption.scrollHeight <= caption.clientHeight + 1 && caption.scrollWidth <= caption.clientWidth + 1) break;
+      size += 22;
+      guard++;
+    }
+    piece.style.setProperty('--poem-size', (size + 28) + 'px');
+  }
+
+  function fitPoems() {
+    var poems = document.querySelectorAll('.piece.poem');
+    for (var i = 0; i < poems.length; i++) fitPoem(poems[i]);
+  }
+
+  function clearPoemFit(except) {
+    var nodes = document.querySelectorAll('.poem-fit');
+    for (var i = 0; i < nodes.length; i++) {
+      if (except && (nodes[i] === except || nodes[i].contains(except))) continue;
+      nodes[i].classList.remove('poem-fit');
+      nodes[i].style.removeProperty('--poem-size');
+    }
+  }
+
+  var menu = document.querySelector('.menu');
+  var menuLit = false;
+  var menuHover = false;
+  function setMenuLit(on) {
+    if (menuLit === on) return;
+    menuLit = on;
+    if (menu) menu.classList.toggle('lit', on);
+  }
+
+  function syncMenu() {
+    var cell = document.querySelector('.menu-cell');
+    if (!cell) return;
+    var btn = cell.querySelector('.menu');
+    var drop = cell.querySelector('.drop');
+    var show = cell.classList.contains('open') || menuHover;
+    if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+    if (drop) drop.hidden = !show;
+  }
+
+  function setMenuHover(on) {
+    if (menuHover === on) return;
+    menuHover = on;
+    syncMenu();
+  }
+
+  function closeAll() {
+    var open = document.querySelectorAll('.cell.open');
+    for (var i = 0; i < open.length; i++) {
+      open[i].classList.remove('open');
+      var btn = open[i].querySelector('.toggle');
+      var drop = open[i].querySelector('.drop');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+      if (drop) drop.hidden = true;
+    }
+  }
+
+  document.addEventListener('pointermove', function (e) {
+    cursor.style.transform = 'translate3d(' + e.clientX + 'px,' + e.clientY + 'px,0)';
+    cursor.style.opacity = heldNote ? '0' : '1';
+    if (heldNote) moveNote(heldNote, e.clientX, e.clientY);
+
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    var piece = null;
+    if (el) {
+      var node = el.closest('.piece');
+      if (node && insideDisk(node, e.clientX, e.clientY)) piece = node;
+    }
+    setHot(piece);
+
+    var overMenu = false;
+    if (menu && insideDisk(menu, e.clientX, e.clientY) && el && (el.closest('.menu') || el.closest('.drop'))) overMenu = true;
+    setMenuLit(overMenu);
+    setMenuHover(overMenu);
+
+    var rgb = GROUND;
+    if (el && !el.closest('.drop')) {
+      var circle = el.closest('.circle');
+      if (circle && insideDisk(circle, e.clientX, e.clientY)) {
+        var hex = (circle.classList.contains('hot') && circle.dataset.h) ? circle.dataset.h : circle.dataset.c;
+        if (hex) rgb = hexToRgb(hex);
+      }
+    }
+    cursor.style.color = contrast(rgb);
+  });
+
+  document.documentElement.addEventListener('pointerleave', function () {
+    cursor.style.opacity = '0';
+    setHot(null);
+    setMenuLit(false);
+    setMenuHover(false);
+  });
+
+  var tool = null;
+  var paintColor = '#d6cbbc';
+  var heldNote = null;
+  var tools = document.getElementById('tools');
+  var swatches = tools.querySelector('.swatches');
+
+  function setTool(next) {
+    tool = (tool === next) ? null : next;
+    var buttons = tools.querySelectorAll('.tool');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('aria-pressed', buttons[i].dataset.tool === tool ? 'true' : 'false');
+    }
+    swatches.hidden = tool !== 'paint';
+    if (tool !== 'note' && heldNote) {
+      heldNote.remove();
+      heldNote = null;
+      syncCursor();
+    }
+  }
+
+  function syncCursor() {
+    var carrying = !!heldNote;
+    cursor.classList.toggle('carried', carrying);
+    cursor.style.opacity = carrying ? '0' : '1';
+  }
+
+  function shiftHex(hex) {
+    var rgb = hexToRgb(hex);
+    var lighter = rgb[0] + rgb[1] + rgb[2] > 480;
+    var s = '#';
+    for (var i = 0; i < 3; i++) {
+      var n = lighter ? rgb[i] - 22 : rgb[i] + 24;
+      if (n < 0) n = 0;
+      if (n > 255) n = 255;
+      var h = n.toString(16);
+      s += h.length < 2 ? '0' + h : h;
+    }
+    return s;
+  }
+
+  function applyColor(circle, hex) {
+    circle.style.setProperty('--c', hex);
+    circle.dataset.c = hex;
+    if (circle.classList.contains('piece')) {
+      var hover = shiftHex(hex);
+      circle.style.setProperty('--h', hover);
+      circle.dataset.h = hover;
+    }
+  }
+
+  function moveNote(note, x, y) {
+    var width = 280;
+    var height = 260;
+    var left = Math.max(68, Math.min(x - 20, window.innerWidth - width - 16));
+    var top = Math.max(16, Math.min(y - 4, window.innerHeight - height - 16));
+    note.style.left = left + 'px';
+    note.style.top = top + 'px';
+  }
+
+  var NOTE_MAILTO = 'hello@ingredientpals.com';
+
+  function buildNote() {
+    var note = document.createElement('article');
+    note.className = 'note';
+    note.innerHTML =
+      '<button type="button" class="note-x" aria-label="Close">&#215;</button>' +
+      '<button type="button" class="send" aria-label="Send">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.2 L19.2 5.2 L13.6 19.2 L11 13.2 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>' +
+      '</button>' +
+      '<p class="email-line"><span>To</span><input type="text" value="Breanna" aria-label="To"></p>' +
+      '<p class="email-line"><span>Subject</span><input type="text" value="Hello from breannafaye.com" aria-label="Subject"></p>' +
+      '<textarea aria-label="Message"></textarea>' +
+      '<p class="email-line from-line"><span>From</span><input type="text" value="" placeholder="(enter your name)" aria-label="From"></p>';
+    note.querySelector('.note-x').addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (heldNote === note) heldNote = null;
+      note.remove();
+      syncCursor();
+    });
+    note.querySelector('.send').addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (note.classList.contains('sent')) return;
+      var toField = note.querySelector('[aria-label="To"]');
+      var subjectField = note.querySelector('[aria-label="Subject"]');
+      var messageField = note.querySelector('[aria-label="Message"]');
+      var fromField = note.querySelector('[aria-label="From"]');
+      var subject = (subjectField && subjectField.value || '').trim();
+      var message = (messageField && messageField.value || '').trim();
+      var from = (fromField && fromField.value || '').trim();
+      var body = message;
+      if (from) body += (body ? '\n\n' : '') + 'From: ' + from;
+      var href = 'mailto:' + NOTE_MAILTO +
+        '?subject=' + encodeURIComponent(subject) +
+        '&body=' + encodeURIComponent(body);
+      window.location.href = href;
+      note.classList.add('sent');
+      var fields = note.querySelectorAll('input, textarea');
+      for (var i = 0; i < fields.length; i++) fields[i].readOnly = true;
+      var send = note.querySelector('.send');
+      send.disabled = true;
+      send.setAttribute('aria-label', 'Sent');
+      send.innerHTML = '<span class="sent-word">Sent</span>';
+    });
+    return note;
+  }
+
+  function beginHold(x, y) {
+    if (heldNote) heldNote.remove();
+    heldNote = buildNote();
+    heldNote.classList.add('holding');
+    moveNote(heldNote, x, y);
+    document.body.appendChild(heldNote);
+    syncCursor();
+  }
+
+  function placeHeld() {
+    if (!heldNote) return;
+    heldNote.classList.remove('holding');
+    var field = heldNote.querySelector('textarea');
+    heldNote = null;
+    syncCursor();
+    field.focus();
+    setTool('note');
+  }
+
+  var projectPage = document.getElementById('project');
+
+  var homeItem = document.querySelector('.home-item');
+
+  function setHomeVisible(on) {
+    if (homeItem) homeItem.hidden = !on;
+  }
+
+  var homeRun = document.getElementById('home-run');
+  var homeQuote = document.getElementById('home-quote');
+  var homeQuoteInner = homeQuote.querySelector('.home-quote-inner');
+  var homeEnd = document.getElementById('home-end');
+  var homeTruth = document.getElementById('home-truth');
+  var homeQuoteMax = 0;
+  var truthTimer = null;
+
+  function clearWakePortal() {
+    var wake = document.querySelector('.wake');
+    if (wake) {
+      wake.classList.remove('wake');
+      var base = wake.dataset.base || '#7f948c';
+      var hover = wake.dataset.baseH || wake.dataset.h || '#9aada6';
+      wake.style.setProperty('--c', base);
+      wake.style.setProperty('--h', hover);
+      wake.dataset.c = base;
+      wake.dataset.h = hover;
+      wake.removeAttribute('role');
+      wake.removeAttribute('tabindex');
+      wake.removeAttribute('aria-label');
+    }
+    var wakeCell = document.querySelector('.wake-cell');
+    if (wakeCell) wakeCell.classList.remove('wake-cell');
+  }
+
+  var HOME_UNLOCK_KEY = 'bf-home-unlocked';
+
+  function markHomeUnlocked() {
+    try { sessionStorage.setItem(HOME_UNLOCK_KEY, '1'); } catch (e) {}
+  }
+
+  function finishEnterHome() {
+    document.body.classList.remove('gate', 'truth', 'ending');
+    clearWakePortal();
+    document.body.classList.add('unlocked');
+    document.body.classList.add('reveal');
+    markHomeUnlocked();
+    closeAll();
+    layoutHomeQuote();
+    setTimeout(function () {
+      document.body.classList.remove('reveal');
+    }, 950);
+  }
+
+  function restoreUnlockedHome() {
+    document.body.classList.remove('gate', 'truth', 'ending', 'reveal');
+    if (homeTruth) {
+      homeTruth.classList.remove('on');
+      homeTruth.hidden = true;
+    }
+    if (homeEnd) {
+      homeEnd.classList.remove('on');
+      homeEnd.hidden = true;
+    }
+    clearWakePortal();
+    document.body.classList.add('unlocked');
+    markHomeUnlocked();
+    closeAll();
+    layoutHomeQuote();
+    window.scrollTo(0, 0);
+  }
+
+  function shouldRestoreUnlockedHome() {
+    try {
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type === 'reload') {
+        sessionStorage.removeItem(HOME_UNLOCK_KEY);
+        return false;
+      }
+      return sessionStorage.getItem(HOME_UNLOCK_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  var homeBlackout = document.getElementById('home-blackout');
+
+  function playTruthThenHome() {
+    if (document.body.classList.contains('truth')) return;
+    if (document.body.classList.contains('blackout')) return;
+    closeAll();
+    if (homeEnd) {
+      homeEnd.classList.remove('on');
+      homeEnd.hidden = true;
+    }
+    // Match gate red path: gate + truth interstitial, then unlock + quote.
+    document.body.classList.add('gate');
+    document.body.classList.remove('ending');
+    document.body.classList.add('truth');
+    if (homeTruth) {
+      homeTruth.hidden = false;
+      requestAnimationFrame(function () {
+        homeTruth.classList.add('on');
+      });
+    }
+    if (truthTimer) clearTimeout(truthTimer);
+    truthTimer = setTimeout(function () {
+      if (homeTruth) homeTruth.classList.remove('on');
+      truthTimer = setTimeout(function () {
+        if (homeTruth) homeTruth.hidden = true;
+        finishEnterHome();
+        truthTimer = null;
+      }, 900);
+    }, 1600);
+  }
+
+  function enterHome() {
+    if (!document.body.classList.contains('gate')) return;
+    if (document.body.classList.contains('truth')) return;
+    playTruthThenHome();
+  }
+
+  var endMatrixTimer = null;
+
+  function resetEndingUI() {
+    if (!homeEnd) return;
+    var prompt = homeEnd.querySelector('.home-end-prompt');
+    var matrix = homeEnd.querySelector('.home-end-matrix');
+    var choices = homeEnd.querySelector('.home-end-choices');
+    if (prompt) prompt.hidden = false;
+    if (matrix) matrix.hidden = true;
+    if (choices) choices.hidden = false;
+  }
+
+  function enterEnding() {
+    if (!document.body.classList.contains('gate')) return;
+    if (document.body.classList.contains('truth')) return;
+    if (endMatrixTimer) {
+      clearTimeout(endMatrixTimer);
+      endMatrixTimer = null;
+    }
+    document.body.classList.remove('gate');
+    document.body.classList.add('ending');
+    closeAll();
+    if (homeQuote) homeQuote.hidden = true;
+    if (homeRun) homeRun.style.height = '0px';
+    window.scrollTo(0, 0);
+    if (homeEnd) {
+      resetEndingUI();
+      homeEnd.hidden = false;
+      requestAnimationFrame(function () {
+        homeEnd.classList.add('on');
+      });
+    }
+  }
+
+  function leaveEndingToHome() {
+    if (!document.body.classList.contains('ending')) return;
+    if (document.body.classList.contains('truth')) return;
+    if (endMatrixTimer) {
+      clearTimeout(endMatrixTimer);
+      endMatrixTimer = null;
+    }
+    playTruthThenHome();
+  }
+
+  function enterBlackout() {
+    if (!homeBlackout || document.body.classList.contains('blackout')) return;
+    document.body.classList.add('blackout');
+    homeBlackout.hidden = false;
+    requestAnimationFrame(function () {
+      homeBlackout.classList.add('on');
+    });
+  }
+
+  function leaveEndingToBlack() {
+    if (!document.body.classList.contains('ending')) return;
+    if (document.body.classList.contains('blackout')) return;
+    if (!homeEnd) {
+      enterBlackout();
+      return;
+    }
+    var prompt = homeEnd.querySelector('.home-end-prompt');
+    var matrix = homeEnd.querySelector('.home-end-matrix');
+    var choices = homeEnd.querySelector('.home-end-choices');
+    if (prompt) prompt.hidden = true;
+    if (choices) choices.hidden = true;
+    if (matrix) matrix.hidden = false;
+    if (endMatrixTimer) clearTimeout(endMatrixTimer);
+    endMatrixTimer = setTimeout(function () {
+      endMatrixTimer = null;
+      enterBlackout();
+    }, 1600);
+  }
+
+  if (homeEnd) {
+    var beginBtn = homeEnd.querySelector('.home-end-choice.begin');
+    var endBtn = homeEnd.querySelector('.home-end-choice.end');
+    if (beginBtn) {
+      beginBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        leaveEndingToHome();
+      });
+    }
+    if (endBtn) {
+      endBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        leaveEndingToBlack();
+      });
+    }
+  }
+
+  function homeScrollActive() {
+    return projectPage.hidden &&
+      !document.body.classList.contains('gate') &&
+      !document.body.classList.contains('truth') &&
+      !document.body.classList.contains('ending') &&
+      !document.body.classList.contains('blackout');
+  }
+
+  function fitHomeQuote() {
+    if (!homeQuoteInner) return;
+    var text = homeQuoteInner.querySelector('.home-quote-text');
+    if (!text) return;
+    var vh = window.innerHeight;
+    var maxH = Math.max(120, vh - 4);
+    var maxW = Math.floor(window.innerWidth * 0.96);
+    // Target ~40% larger than the prior ~54pt on-screen fit.
+    var target = Math.min(120, Math.round(54 * 1.4));
+    var size = 120;
+    text.style.fontSize = size + 'pt';
+    function overflows() {
+      return homeQuoteInner.offsetHeight > maxH || homeQuoteInner.offsetWidth > maxW;
+    }
+    var guard = 0;
+    while (guard < 160 && overflows() && size > target) {
+      size -= 1;
+      text.style.fontSize = size + 'pt';
+      guard++;
+    }
+    while (guard < 200 && overflows() && size > 28) {
+      size -= 1;
+      text.style.fontSize = size + 'pt';
+      guard++;
+    }
+  }
+
+  function layoutHomeQuote() {
+    if (!homeRun || !homeQuoteInner) return;
+    homeQuote.hidden = false;
+    fitHomeQuote();
+    var vh = window.innerHeight;
+    var qh = homeQuoteInner.offsetHeight || Math.round(vh * 0.5);
+    // Keep the full quote on-screen for a stretch (qh <= vh after fit),
+    // then exit only after the final word has been visible.
+    // scroll: 0 → enter; qh → fully in; vh → still fully in (top at 0);
+    // vh+qh → fully gone.
+    homeQuoteMax = Math.max(1, vh + qh);
+    homeRun.style.height = (homeQuoteMax + vh) + 'px';
+    if (!homeScrollActive()) homeQuote.hidden = true;
+    syncHomeQuote();
+  }
+
+  function syncHomeQuote() {
+    if (!homeQuoteInner) return;
+    if (document.body.classList.contains('gate') || document.body.classList.contains('truth') || document.body.classList.contains('ending') || document.body.classList.contains('blackout')) {
+      if (window.scrollY) window.scrollTo(0, 0);
+      homeQuote.hidden = true;
+      return;
+    }
+    if (!homeScrollActive()) {
+      homeQuote.hidden = true;
+      return;
+    }
+    homeQuote.hidden = false;
+    var top = window.scrollY || window.pageYOffset || 0;
+    if (top > homeQuoteMax) {
+      window.scrollTo(0, homeQuoteMax);
+      top = homeQuoteMax;
+    }
+    var vh = window.innerHeight;
+    var y = vh - top;
+    homeQuoteInner.style.transform = 'translate(-50%, ' + y + 'px)';
+    // Lower opacity near the bottom of the viewport; fade out as it approaches the bottom edge.
+    var qh = homeQuoteInner.offsetHeight || 1;
+    var quoteCenter = y + qh * 0.5;
+    var fadeStart = vh * 0.55;
+    var fadeEnd = vh * 0.95;
+    var opacity = 1;
+    if (quoteCenter >= fadeEnd) opacity = 0;
+    else if (quoteCenter > fadeStart) {
+      opacity = 1 - (quoteCenter - fadeStart) / (fadeEnd - fadeStart);
+    }
+    if (opacity < 0) opacity = 0;
+    if (opacity > 1) opacity = 1;
+    homeQuoteInner.style.opacity = String(opacity);
+  }
+
+  function showWork() {
+    if (!projectPage.hidden) closeProject();
+    hidePoems();
+    document.body.classList.add('work-on');
+  }
+
+  function hideWork() {
+    document.body.classList.remove('work-on');
+  }
+
+  function showPoems() {
+    if (!projectPage.hidden) closeProject();
+    hideWork();
+    document.body.classList.add('poem-on');
+    fitPoems();
+  }
+
+  function hidePoems() {
+    document.body.classList.remove('poem-on');
+    clearPoemFit();
+    if (hot && hot.classList.contains('poem')) fitPoem(hot);
+  }
+
+  function closeProject() {
+    projectPage.hidden = true;
+    setHomeVisible(false);
+    closeAll();
+    syncHomeQuote();
+  }
+
+  function openProject(circle) {
+    var href = circle.dataset.href;
+    if (href) {
+      if (/^https?:/i.test(href)) window.open(href, '_blank', 'noopener,noreferrer');
+      else window.location.href = href;
+      return;
+    }
+    var hex = circle.dataset.c || '#9da17d';
+    var rgb = hexToRgb(hex);
+    var lum = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
+    projectPage.style.background = hex;
+    projectPage.style.color = lum > 0.55 ? '#2a2521' : '#f4f0e8';
+    projectPage.hidden = false;
+    projectPage.scrollTop = 0;
+    closeAll();
+    setHomeVisible(true);
+    syncHomeQuote();
+  }
+
+  window.addEventListener('scroll', syncHomeQuote, { passive: true });
+  window.addEventListener('resize', layoutHomeQuote);
+  requestAnimationFrame(layoutHomeQuote);
+
+  document.getElementById('project-back').addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    hideWork();
+    hidePoems();
+    closeProject();
+  });
+
+  var aboutTimer = null;
+  var aboutRevealTimers = [];
+  var ABOUT_STEP_MS = 1000;
+  var ABOUT_CLIENT_MS = 300; // was 500; 40% faster logo stagger
+
+  function clearAboutRevealTimers() {
+    for (var i = 0; i < aboutRevealTimers.length; i++) clearTimeout(aboutRevealTimers[i]);
+    aboutRevealTimers = [];
+  }
+
+  function clearAboutTimer() {
+    if (aboutTimer) {
+      clearTimeout(aboutTimer);
+      aboutTimer = null;
+    }
+    clearAboutRevealTimers();
+  }
+
+  function scheduleAboutStep(fn) {
+    clearAboutTimer();
+    aboutTimer = setTimeout(function () {
+      aboutTimer = null;
+      fn();
+    }, ABOUT_STEP_MS);
+  }
+
+  function showAbout() {
+    clearAboutTimer();
+    collapseAbout();
+    hideWork();
+    hidePoems();
+    document.body.classList.add('about-on');
+    var circle = document.querySelector('.about-host');
+    var cell = circle.closest('.cell');
+    var copy = circle.querySelector('.bio-copy');
+    circle.classList.add('bio-open');
+    cell.classList.add('bio-open');
+    layoutAbout(circle, copy, null);
+    showAboutPortrait();
+    scheduleAboutStep(function () {
+      moreAbout();
+      scheduleAboutStep(function () {
+        thirdAbout();
+        scheduleAboutStep(clientsAbout);
+      });
+    });
+  }
+
+  function aboutLimit(size, arrowH) {
+    var curve = size * 0.62;
+    if (!arrowH) return curve;
+    return Math.min(curve, size - arrowH * 2 - 48);
+  }
+
+  function placeAboutArrow(piece) {
+    var copy = piece.querySelector('.bio-copy');
+    var arrow = piece.querySelector('.bio-more');
+    if (!copy || !arrow) return;
+    var pieceBox = piece.getBoundingClientRect();
+    var copyBox = copy.getBoundingClientRect();
+    var textBottom = copyBox.bottom - pieceBox.top;
+    var mid = (textBottom + pieceBox.height) / 2;
+    arrow.style.top = (mid - arrow.offsetHeight / 2) + 'px';
+  }
+
+  function layoutAbout(piece, copy, arrow) {
+    var cell = piece.closest('.cell');
+    var size = cell ? cell.offsetWidth : piece.offsetWidth;
+    var guard = 0;
+    while (guard < 36) {
+      piece.style.setProperty('--bio-size', size + 'px');
+      var arrowH = arrow ? arrow.offsetHeight : 0;
+      var limit = aboutLimit(size, arrowH);
+      if (copy.scrollHeight <= limit + 1 && copy.scrollWidth <= copy.clientWidth + 1) break;
+      size += 22;
+      guard++;
+    }
+    if (arrow) placeAboutArrow(piece);
+  }
+
+  function downTriangle(extraClass) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bio-more' + (extraClass ? ' ' + extraClass : '');
+    button.setAttribute('aria-label', 'More about');
+    button.innerHTML = '<svg viewBox="0 0 14 12" aria-hidden="true"><polygon points="0,0 14,0 7,12" fill="currentColor"/></svg>';
+    return button;
+  }
+
+  function restoreHome(piece) {
+    if (!piece || piece.classList.contains('about-host')) return;
+    var base = piece.dataset.base;
+    var hover = piece.dataset.baseH || base;
+    if (base) {
+      piece.style.setProperty('--c', base);
+      piece.dataset.c = base;
+    }
+    if (hover) {
+      piece.style.setProperty('--h', hover);
+      piece.dataset.h = hover;
+    }
+    piece.style.removeProperty('--bio-size');
+    piece.classList.remove('about-more', 'about-step', 'about-last', 'about-portrait', 'bio-open', 'client-note', 'client-logo', 'client-reveal', 'is-in');
+    var extra = piece.querySelectorAll('.about-next, .logo-img');
+    for (var i = 0; i < extra.length; i++) extra[i].remove();
+    var cell = piece.closest('.cell');
+    if (!cell) return;
+    cell.classList.remove('about-next', 'about-third', 'bio-open');
+  }
+
+  function showAboutPortrait() {
+    var host = document.querySelector('.about-host');
+    var slot = document.querySelector('.about-portrait-slot');
+    if (!host || !slot) return;
+    paintAbout(slot, host);
+    slot.classList.add('about-portrait');
+    revealClientPiece(slot);
+  }
+
+  function collapseAbout() {
+    clearAboutTimer();
+    document.body.classList.remove('about-on');
+    var host = document.querySelector('.about-host');
+    if (host) {
+      host.classList.remove('bio-open');
+      host.style.removeProperty('--bio-size');
+      var hostCell = host.closest('.cell');
+      if (hostCell) hostCell.classList.remove('bio-open');
+    }
+    var pieces = document.querySelectorAll('.about-more, .about-step, .about-last, .about-portrait, .client-note, .client-logo');
+    for (var i = 0; i < pieces.length; i++) restoreHome(pieces[i]);
+  }
+
+  function clearAboutPiece(piece) {
+    restoreHome(piece);
+  }
+
+  function paintAbout(piece, host) {
+    var hex = host.dataset.c || '#d6cbbc';
+    var hover = host.dataset.h || hex;
+    piece.style.setProperty('--c', hex);
+    piece.style.setProperty('--h', hover);
+    piece.dataset.c = hex;
+    piece.dataset.h = hover;
+  }
+
+  function fitAbout(piece, cell, block, line, extraEl) {
+    layoutAbout(piece, line, extraEl);
+  }
+
+  function aboutBlock(piece, text, triangleClass) {
+    var block = piece.querySelector('.about-next');
+    if (!block) {
+      block = document.createElement('span');
+      block.className = 'bio about-next';
+      var copy = document.createElement('span');
+      copy.className = 'bio-copy';
+      block.appendChild(copy);
+      piece.appendChild(block);
+    }
+    var line = block.querySelector('.bio-copy');
+    line.textContent = text;
+    var triangle = block.querySelector('.bio-more');
+    if (triangleClass) {
+      if (!triangle) block.appendChild(downTriangle(triangleClass));
+      else triangle.classList.add(triangleClass);
+    } else if (triangle) {
+      triangle.remove();
+    }
+    return block;
+  }
+
+  function cellBelow(anchor) {
+    var cells = boardCells();
+    var row = -1;
+    var col = -1;
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        if (cells[r][c] && cells[r][c].contains(anchor)) {
+          row = r;
+          col = c;
+        }
+      }
+    }
+    if (row < 0 || row + 1 >= ROWS) return null;
+    return cells[row + 1][col] || null;
+  }
+
+  function moreAbout() {
+    var host = document.querySelector('.about-host');
+    if (!host) return;
+    var belowCell = cellBelow(host);
+    if (!belowCell) return;
+    var piece = belowCell.querySelector('.piece');
+    if (!piece) return;
+    paintAbout(piece, host);
+    var prev = document.querySelectorAll('.about-more');
+    for (var i = 0; i < prev.length; i++) {
+      if (prev[i] === piece) continue;
+      clearAboutPiece(prev[i]);
+    }
+    piece.classList.add('about-more');
+    piece.classList.add('about-step');
+    piece.classList.add('bio-open');
+    belowCell.classList.add('about-next');
+    belowCell.classList.add('bio-open');
+    var block = aboutBlock(piece, 'I design how people and emerging technologies collide, translating complex human-machine interactions into simple, intuitive experiences that drive innovation and impact.', null);
+    fitAbout(piece, belowCell, block, block.querySelector('.bio-copy'), null);
+  }
+
+  function thirdAbout() {
+    var host = document.querySelector('.about-host');
+    var second = document.querySelector('.about-step');
+    if (!host || !second) return;
+    var belowCell = cellBelow(second);
+    if (!belowCell) return;
+    var piece = belowCell.querySelector('.piece');
+    if (!piece) return;
+    paintAbout(piece, host);
+    var prev = document.querySelectorAll('.about-last');
+    for (var i = 0; i < prev.length; i++) {
+      if (prev[i] === piece) continue;
+      clearAboutPiece(prev[i]);
+    }
+    piece.classList.add('about-more');
+    piece.classList.add('about-last');
+    piece.classList.add('bio-open');
+    belowCell.classList.add('about-next');
+    belowCell.classList.add('about-third');
+    belowCell.classList.add('bio-open');
+    var block = aboutBlock(piece, 'Over 15 years I’ve worked across AI/ML, blockchain, and XR, blending design, strategy, and research to help teams build what’s next.', null);
+    fitAbout(piece, belowCell, block, block.querySelector('.bio-copy'), null);
+  }
+
+  function revealClientPiece(piece) {
+    if (!piece) return;
+    piece.classList.add('client-reveal');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        piece.classList.add('is-in');
+      });
+    });
+  }
+
+  function placeClientLogo(cell, src, alt) {
+    if (!cell) return;
+    var piece = cell.querySelector('.piece');
+    if (!piece || piece.classList.contains('menu')) return;
+    piece.classList.add('client-logo');
+    var img = piece.querySelector('.logo-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'logo-img';
+      piece.appendChild(img);
+    }
+    img.src = src;
+    img.alt = alt;
+    revealClientPiece(piece);
+  }
+
+  function clientsAbout() {
+    var host = document.querySelector('.about-host');
+    if (!host) return;
+    clearAboutRevealTimers();
+    var cells = boardCells();
+    var row = cells[ROWS - 1];
+    var above = cells[ROWS - 2];
+    // About bio stack is column 1. Logos only in the 4×5 block right of it (rows 0–3, cols 2–6).
+    var aboutCol = 1;
+    var logoMinCol = aboutCol + 1; // 2
+    var logoMaxCol = COLS - 1; // 6 → 5 logo columns
+    // Reserved: menu/about/portrait/client-note (never logo targets).
+    var reserved = {};
+    reserved['0,0'] = true; // menu
+    reserved['2,0'] = true; // portrait (left of About text)
+    reserved['3,1'] = true; // client-note (under About text stack)
+    for (var rr = 0; rr < ROWS; rr++) {
+      for (var cc = 0; cc <= aboutCol; cc++) reserved[rr + ',' + cc] = true;
+    }
+
+    // Fixed placements — all inside the 4×5 right block.
+    var fixedLogos = [
+      ['media/logos/dubai-future.jpg', 'Dubai Future Foundation', 0, 5],
+      ['media/logos/quest-about.png', 'Quest', 2, 2],
+      ['media/logos/sofar-about.png', 'Sofar', 0, 6],
+      ['media/logos/volume-about.png', 'Volume', 1, 6],
+      ['media/logos/intercorp-about.png', 'Intercorp', 2, 6],
+      ['media/logos/highline.jpg', 'The High Line', 3, 6]
+    ];
+    for (var f = 0; f < fixedLogos.length; f++) {
+      var fr = fixedLogos[f][2];
+      var fc = fixedLogos[f][3];
+      if (fc < logoMinCol || fc > logoMaxCol) continue;
+      reserved[fr + ',' + fc] = true;
+    }
+
+    var logoList = [
+      ['media/logos/code-and-theory.jpg', 'Code and Theory'],
+      ['media/logos/unilever.png', 'Unilever'],
+      ['media/logos/ideo.jpg', 'IDEO'],
+      ['media/logos/us-army.png', 'U.S. Army'],
+      ['media/logos/mit-media-lab.png', 'MIT Media Lab'],
+      ['media/logos/samsung.png', 'Samsung'],
+      ['media/logos/neom.jpg', 'NEOM'],
+      ['media/logos/mobi.jpg', 'MOBI'],
+      ['media/logos/guardian.png', 'The Guardian'],
+      ['media/logos/moic-about.png', 'Museum of Ice Cream'],
+      ['media/logos/citi-ventures-about.png', 'Citi Ventures'],
+      ['media/logos/the-metapause-about.png', 'The Metapause'],
+      ['media/logos/llnl-about.png', 'Lawrence Livermore National Laboratory'],
+      ['media/logos/skoda-about.png', 'Škoda']
+    ];
+
+    // Fill the 4×5 logo grid (right of About) in preferred then scan order.
+    var preferred = [
+      [2, 3], [2, 4], [2, 5],
+      [3, 2], [3, 3], [3, 4], [3, 5],
+      [1, 2], [1, 3], [1, 4], [1, 5],
+      [0, 2], [0, 3], [0, 4]
+    ];
+    var seen = {};
+    var slots = [];
+    function addSlot(r, c) {
+      if (c < logoMinCol || c > logoMaxCol) return;
+      if (r < 0 || r >= ROWS) return;
+      var key = r + ',' + c;
+      if (reserved[key] || seen[key]) return;
+      if (!cells[r] || !cells[r][c]) return;
+      seen[key] = true;
+      slots.push([r, c]);
+    }
+    for (var p = 0; p < preferred.length; p++) addSlot(preferred[p][0], preferred[p][1]);
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = logoMinCol; c <= logoMaxCol; c++) addSlot(r, c);
+    }
+
+    // Client note under the About text column ([3,1]), then logos in random order.
+    aboutRevealTimers.push(setTimeout(function () {
+      var noteCell = row[aboutCol]; // [3,1] — one slot right of former [3,0], under About stack
+      var piece = noteCell && noteCell.querySelector('.piece');
+      if (!piece || piece.classList.contains('menu')) return;
+      paintAbout(piece, host);
+      piece.classList.add('client-note');
+      piece.classList.add('bio-open');
+      noteCell.classList.add('about-next');
+      noteCell.classList.add('bio-open');
+      var block = aboutBlock(piece, 'I’ve worked with startups, enterprises, agencies, cities, non profits and fortune 50 companies', null);
+      fitAbout(piece, noteCell, block, block.querySelector('.bio-copy'), null);
+      revealClientPiece(piece);
+    }, 0));
+
+    var logoSteps = [];
+    for (var i = 0; i < logoList.length && i < slots.length; i++) {
+      (function (logo, slot) {
+        logoSteps.push(function () {
+          placeClientLogo(cells[slot[0]] && cells[slot[0]][slot[1]], logo[0], logo[1]);
+        });
+      })(logoList[i], slots[i]);
+    }
+    for (var j = 0; j < fixedLogos.length; j++) {
+      (function (entry) {
+        logoSteps.push(function () {
+          placeClientLogo(cells[entry[2]] && cells[entry[2]][entry[3]], entry[0], entry[1]);
+        });
+      })(fixedLogos[j]);
+    }
+    for (var sh = logoSteps.length - 1; sh > 0; sh--) {
+      var swap = Math.floor(Math.random() * (sh + 1));
+      var tmp = logoSteps[sh];
+      logoSteps[sh] = logoSteps[swap];
+      logoSteps[swap] = tmp;
+    }
+
+    for (var s = 0; s < logoSteps.length; s++) {
+      (function (fn, delay) {
+        aboutRevealTimers.push(setTimeout(fn, delay));
+      })(logoSteps[s], (s + 1) * ABOUT_CLIENT_MS);
+    }
+  }
+
+  var COLS = 7;
+  var ROWS = 4;
+  var SWATCHES = ['#d6cbbc', '#9da17d', '#dbbba4', '#909aa9', '#c3927d', '#c9a56e', '#709a95', '#c09da4'];
+  var settling = false;
+  var matchTimer = null;
+  var scoreTotal = 0;
+  var scoreBoard = document.getElementById('score');
+  var scoreValue = document.getElementById('score-value');
+  var scoreGain = document.getElementById('score-gain');
+
+  function pieceColor(el) {
+    return el && el.dataset.c ? el.dataset.c.toLowerCase() : '';
+  }
+
+  var baseCircles = document.querySelectorAll('.circle[data-c]');
+  for (var b = 0; b < baseCircles.length; b++) {
+    baseCircles[b].dataset.base = baseCircles[b].dataset.c;
+    baseCircles[b].dataset.baseH = baseCircles[b].dataset.h || baseCircles[b].dataset.c;
+  }
+
+  function boardCells() {
+    var cells = document.querySelectorAll('.grid > .cell');
+    var grid = [];
+    var r;
+    var c;
+    for (r = 0; r < ROWS; r++) {
+      grid[r] = [];
+      for (c = 0; c < COLS; c++) grid[r][c] = cells[r * COLS + c] || null;
+    }
+    return grid;
+  }
+
+  function readGrid() {
+    var cells = boardCells();
+    var grid = [];
+    for (var r = 0; r < ROWS; r++) {
+      grid[r] = [];
+      for (var c = 0; c < COLS; c++) {
+        var cell = cells[r][c];
+        grid[r][c] = cell ? cell.querySelector('.circle') : null;
+      }
+    }
+    return grid;
+  }
+
+  function findRuns(grid) {
+    var dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+    var rows = grid.length;
+    var cols = grid[0].length;
+    var runs = [];
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        var piece = grid[r][c];
+        var color = pieceColor(piece);
+        if (!color) continue;
+        for (var d = 0; d < dirs.length; d++) {
+          var dr = dirs[d][0];
+          var dc = dirs[d][1];
+          var pr = r - dr;
+          var pc = c - dc;
+          if (pr >= 0 && pr < rows && pc >= 0 && pc < cols && pieceColor(grid[pr][pc]) === color) continue;
+          var run = [piece];
+          var nr = r + dr;
+          var nc = c + dc;
+          while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && pieceColor(grid[nr][nc]) === color) {
+            run.push(grid[nr][nc]);
+            nr += dr;
+            nc += dc;
+          }
+          if (run.length >= 3) runs.push(run);
+        }
+      }
+    }
+    return runs;
+  }
+
+  function runPoints(len) {
+    return len >= 4 ? 10 : 3;
+  }
+
+  function addScore(gain) {
+    scoreTotal += gain;
+    scoreValue.textContent = String(scoreTotal);
+    scoreGain.textContent = '+' + gain;
+    scoreBoard.hidden = false;
+  }
+
+  function makePiece(hex) {
+    var el = document.createElement('div');
+    el.className = 'circle piece';
+    applyColor(el, hex);
+    el.dataset.base = hex;
+    return el;
+  }
+
+  function makeButton(hex) {
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'circle';
+    applyColor(el, hex);
+    el.dataset.base = hex;
+    return el;
+  }
+
+  function cellDrop(cell) {
+    if (!cell) return null;
+    for (var i = 0; i < cell.children.length; i++) {
+      if (cell.children[i].classList.contains('drop')) return cell.children[i];
+    }
+    return null;
+  }
+
+  function liftCta(el) {
+    var project = el.classList.contains('project');
+    var about = el.classList.contains('about-host');
+    var menu = el.classList.contains('menu');
+    var toggle = el.classList.contains('toggle');
+    var poem = el.classList.contains('poem');
+    var clientNote = el.classList.contains('client-note');
+    var clientLogo = el.classList.contains('client-logo');
+    if (!project && !about && !menu && !toggle && !poem && !clientNote && !clientLogo) return null;
+    var cell = el.closest('.cell');
+    var cta = {
+      project: project,
+      about: about,
+      menu: menu,
+      toggle: toggle,
+      poem: poem,
+      clientNote: clientNote,
+      clientLogo: clientLogo,
+      clientBio: clientNote ? el.querySelector('.about-next') : null,
+      logo: clientLogo ? el.querySelector('.logo-img') : null,
+      clientC: el.dataset.c || '',
+      clientH: el.dataset.h || '',
+      caption: (project || poem) ? el.querySelector('.caption') : null,
+      href: project ? (el.dataset.href || '') : '',
+      bio: about ? el.querySelector('.bio') : null,
+      drop: (menu || toggle) ? cellDrop(cell) : null,
+      ariaLabel: el.getAttribute('aria-label'),
+      haspopup: el.getAttribute('aria-haspopup'),
+      menuCell: !!(cell && cell.classList.contains('menu-cell')),
+      onDark: !!(cell && cell.classList.contains('on-dark')),
+      base: el.dataset.base || el.dataset.c || ''
+    };
+    if (cta.caption && cta.caption.parentNode) cta.caption.parentNode.removeChild(cta.caption);
+    var legacyCover = el.querySelector('.project-cover');
+    if (legacyCover) legacyCover.remove();
+    if (cta.bio && cta.bio.parentNode) cta.bio.parentNode.removeChild(cta.bio);
+    if (cta.clientBio && cta.clientBio.parentNode) cta.clientBio.parentNode.removeChild(cta.clientBio);
+    if (cta.logo && cta.logo.parentNode) cta.logo.parentNode.removeChild(cta.logo);
+    if (cta.drop && cta.drop.parentNode) {
+      cta.drop.hidden = true;
+      cta.drop.parentNode.removeChild(cta.drop);
+    }
+    if (cell) cell.classList.remove('open', 'bio-open', 'menu-cell', 'on-dark');
+    el.classList.remove('project', 'about-host', 'bio-open', 'toggle', 'menu', 'poem', 'client-note', 'client-logo');
+    return cta;
+  }
+
+  function stampCta(el, cta) {
+    if (!cta) return;
+    if (cta.project) el.classList.add('project');
+    if (cta.poem) el.classList.add('poem');
+    if (cta.about) el.classList.add('about-host');
+    if (cta.toggle) {
+      el.classList.add('toggle');
+      el.setAttribute('aria-expanded', 'false');
+    }
+    if (cta.menu) el.classList.add('menu');
+    if (cta.haspopup) el.setAttribute('aria-haspopup', cta.haspopup);
+    if (cta.ariaLabel) el.setAttribute('aria-label', cta.ariaLabel);
+    delete el.dataset.cover;
+    el.style.removeProperty('--cover');
+    if (cta.href) el.dataset.href = cta.href;
+    else delete el.dataset.href;
+    if (cta.caption) el.appendChild(cta.caption);
+    if (cta.bio) el.appendChild(cta.bio);
+    if (cta.clientNote) {
+      el.classList.add('client-note', 'bio-open');
+      if (cta.clientC) {
+        el.style.setProperty('--c', cta.clientC);
+        el.dataset.c = cta.clientC;
+      }
+      if (cta.clientH) {
+        el.style.setProperty('--h', cta.clientH);
+        el.dataset.h = cta.clientH;
+      }
+      if (cta.clientBio) el.appendChild(cta.clientBio);
+    }
+    if (cta.clientLogo) {
+      el.classList.add('client-logo');
+      if (cta.clientC) {
+        el.style.setProperty('--c', cta.clientC);
+        el.dataset.c = cta.clientC;
+      }
+      if (cta.clientH) {
+        el.style.setProperty('--h', cta.clientH);
+        el.dataset.h = cta.clientH;
+      }
+      if (cta.logo) el.appendChild(cta.logo);
+    }
+    if (cta.base) el.dataset.base = cta.base;
+    el._cta = cta;
+  }
+
+  function mountCta(cell, el) {
+    var cta = el._cta;
+    if (!cta) return;
+    if (cta.drop) cell.appendChild(cta.drop);
+    if (cta.menuCell) cell.classList.add('menu-cell');
+    if (cta.onDark) cell.classList.add('on-dark');
+    el._cta = null;
+  }
+
+  function shadeFresh(fresh) {
+    var tries = 0;
+    while (tries < 24) {
+      var runs = findRuns(readGrid());
+      var culprit = null;
+      for (var i = 0; i < runs.length && !culprit; i++) {
+        for (var j = 0; j < runs[i].length; j++) {
+          if (fresh.indexOf(runs[i][j]) !== -1) {
+            culprit = runs[i][j];
+            break;
+          }
+        }
+      }
+      if (!culprit) return;
+      applyColor(culprit, SWATCHES[tries % SWATCHES.length]);
+      tries++;
+    }
+  }
+
+  function shiftOf(el) {
+    return el.classList.contains('bio-open') ? 'translate(-50%, -50%) ' : '';
+  }
+
+  function dropPieces(done) {
+    var cells = boardCells();
+    var moves = [];
+    var fresh = [];
+    for (var c = 0; c < COLS; c++) {
+      var slots = [];
+      var survivors = [];
+      for (var r = ROWS - 1; r >= 0; r--) {
+        var cell = cells[r][c];
+        if (!cell || cell.querySelector('.menu')) continue;
+        slots.push(cell);
+        var piece = cell.querySelector('.piece');
+        if (piece && !piece.classList.contains('clearing')) {
+          survivors.push({ el: piece, fromTop: piece.getBoundingClientRect().top });
+        }
+      }
+      var ctas = [];
+      for (r = 0; r < ROWS; r++) {
+        cell = cells[r][c];
+        if (!cell) continue;
+        piece = cell.querySelector('.piece.clearing');
+        if (piece) {
+          var kept = liftCta(piece);
+          if (kept) ctas.push(kept);
+          var host = piece.closest('.cell');
+          if (host) host.classList.remove('bio-open');
+          if (hot === piece) hot = null;
+          piece.remove();
+        }
+      }
+      while (survivors.length < slots.length) {
+        var born = makePiece(SWATCHES[Math.floor(Math.random() * SWATCHES.length)]);
+        if (ctas.length) stampCta(born, ctas.shift());
+        survivors.push({ el: born, fromTop: null });
+        fresh.push(born);
+      }
+      while (ctas.length) {
+        var carrier = null;
+        for (var s = fresh.length - 1; s >= 0; s--) {
+          if (!fresh[s]._cta) { carrier = fresh[s]; break; }
+        }
+        if (!carrier) break;
+        stampCta(carrier, ctas.shift());
+      }
+      for (var i = 0; i < slots.length; i++) {
+        moves.push({ el: survivors[i].el, cell: slots[i], fromTop: survivors[i].fromTop });
+      }
+    }
+    var fixed = document.querySelectorAll('.grid .menu.clearing');
+    for (var f = 0; f < fixed.length; f++) {
+      var gone = fixed[f];
+      var home = gone.closest('.cell');
+      var keptCta = liftCta(gone);
+      var hex = (keptCta && keptCta.base) || gone.dataset.base || gone.dataset.c;
+      if (hot === gone) hot = null;
+      gone.remove();
+      var restored = makeButton(hex);
+      if (keptCta) stampCta(restored, keptCta);
+      moves.push({ el: restored, cell: home, fromTop: null });
+    }
+    var maxMs = 0;
+    var animated = [];
+    for (i = 0; i < moves.length; i++) {
+      var move = moves[i];
+      var el = move.el;
+      var oldCell = el.closest('.cell');
+      if (oldCell && oldCell !== move.cell) oldCell.classList.remove('bio-open');
+      move.cell.appendChild(el);
+      mountCta(move.cell, el);
+      if (el.classList.contains('bio-open')) move.cell.classList.add('bio-open');
+      var last = el.getBoundingClientRect();
+      var fromTop = move.fromTop === null ? -(last.height + 28) : move.fromTop;
+      var dy = fromTop - last.top;
+      if (Math.abs(dy) < 1.5) {
+        el.style.transition = '';
+        el.style.transform = '';
+        continue;
+      }
+      var ms = Math.max(560, Math.min(980, 280 + Math.abs(dy) * 1.15));
+      if (ms > maxMs) maxMs = ms;
+      if (!move.cell.classList.contains('menu-cell')) move.cell.style.zIndex = '4';
+      el.style.transform = '';
+      animated.push(el.animate(
+        [
+          { transform: shiftOf(el) + 'translateY(' + dy + 'px)' },
+          { transform: shiftOf(el) + 'translateY(0px)' }
+        ],
+        { duration: ms, easing: 'cubic-bezier(0.22, 0.8, 0.2, 1)', fill: 'forwards' }
+      ));
+    }
+    shadeFresh(fresh);
+    var finished = false;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      for (var n = 0; n < moves.length; n++) {
+        moves[n].el.style.transform = '';
+        if (!moves[n].cell.classList.contains('menu-cell')) moves[n].cell.style.zIndex = '';
+      }
+      for (var a = 0; a < animated.length; a++) animated[a].cancel();
+      done();
+    }
+    if (!animated.length) {
+      finish();
+      return;
+    }
+    var pending = animated.length;
+    for (i = 0; i < animated.length; i++) {
+      animated[i].onfinish = function () {
+        pending--;
+        if (pending === 0) finish();
+      };
+    }
+    setTimeout(finish, maxMs + 160);
+  }
+
+  function commitMatches(depth) {
+    if (settling) return;
+    if (depth > 8) return;
+    var runs = findRuns(readGrid());
+    if (!runs.length) return;
+    settling = true;
+    var seen = [];
+    var gained = 0;
+    for (var i = 0; i < runs.length; i++) {
+      gained += runPoints(runs[i].length);
+      for (var j = 0; j < runs[i].length; j++) {
+        if (seen.indexOf(runs[i][j]) === -1) seen.push(runs[i][j]);
+      }
+    }
+    addScore(gained);
+    for (i = 0; i < seen.length; i++) seen[i].classList.add('clearing');
+    setTimeout(function () {
+      clearPoemFit();
+      dropPieces(function () {
+        settling = false;
+        if (document.body.classList.contains('poem-on')) fitPoems();
+        else if (hot && hot.classList.contains('poem')) fitPoem(hot);
+        resolveMatches(depth + 1);
+      });
+    }, 280);
+  }
+
+  function resolveMatches(depth) {
+    if (settling) return;
+    depth = depth || 0;
+    if (!findRuns(readGrid()).length) return;
+    if (matchTimer) clearTimeout(matchTimer);
+    var wait = depth ? 40 : 480;
+    matchTimer = setTimeout(function () {
+      matchTimer = null;
+      commitMatches(depth);
+    }, wait);
+  }
+
+  document.addEventListener('click', function (e) {
+    if (document.body.classList.contains('ending') || document.body.classList.contains('truth') || document.body.classList.contains('blackout')) return;
+    if (document.body.classList.contains('gate')) {
+      var wakeHit = e.target.closest('.wake');
+      if (wakeHit && insideDisk(wakeHit, e.clientX, e.clientY)) {
+        enterEnding();
+        return;
+      }
+      var menuBtn = e.target.closest('.menu');
+      if (menuBtn && insideDisk(menuBtn, e.clientX, e.clientY)) {
+        enterHome();
+      }
+      return;
+    }
+    var onAbout = e.target.closest('.about-host, .about-more, .about-step, .about-last, .client-note, .client-logo');
+    if (!onAbout && !e.target.closest('.about-item')) collapseAbout();
+    if (document.body.classList.contains('work-on') && !e.target.closest('.work-item')) hideWork();
+    if (document.body.classList.contains('poem-on') && !e.target.closest('.poem-item') && !e.target.closest('.poem')) hidePoems();
+    if (e.target.closest('.home-item')) {
+      closeProject();
+      return;
+    }
+    if (e.target.closest('.about-item')) {
+      if (!projectPage.hidden) closeProject();
+      showAbout();
+      closeAll();
+      return;
+    }
+    if (e.target.closest('.contact-item')) {
+      closeAll();
+      if (tool !== 'note') setTool('note');
+      beginHold(e.clientX, e.clientY);
+      return;
+    }
+    if (e.target.closest('.work-item')) {
+      showWork();
+      closeAll();
+      return;
+    }
+    if (e.target.closest('.poem-item')) {
+      showPoems();
+      closeAll();
+      return;
+    }
+    if (e.target.closest('#tools')) {
+      var toolBtn = e.target.closest('.tool');
+      if (toolBtn) {
+        setTool(toolBtn.dataset.tool);
+        if (tool === 'note') beginHold(e.clientX, e.clientY);
+      }
+      var swatch = e.target.closest('.swatch');
+      if (swatch) {
+        paintColor = swatch.dataset.color;
+        var all = swatches.querySelectorAll('.swatch');
+        for (var i = 0; i < all.length; i++) {
+          all[i].setAttribute('aria-pressed', all[i] === swatch ? 'true' : 'false');
+        }
+      }
+      return;
+    }
+    if (heldNote) {
+      placeHeld();
+      return;
+    }
+    if (e.target.closest('.note')) return;
+    if (settling && e.target.closest('.grid')) return;
+    if (tool === 'paint') {
+      var painted = e.target.closest('.circle');
+      if (painted && !painted.classList.contains('menu') && insideDisk(painted, e.clientX, e.clientY)) {
+        applyColor(painted, paintColor);
+        resolveMatches();
+        return;
+      }
+    }
+    if (tool !== 'paint') {
+      var projectHit = e.target.closest('.project');
+      if (projectHit && insideDisk(projectHit, e.clientX, e.clientY)) {
+        openProject(projectHit);
+        return;
+      }
+    }
+    if (e.target.closest('.drop')) return;
+    var btn = e.target.closest('.toggle');
+    if (btn && !insideDisk(btn, e.clientX, e.clientY)) btn = null;
+    if (btn && btn.classList.contains('menu') && !document.body.classList.contains('unlocked')) btn = null;
+    var cell = btn ? btn.closest('.cell') : null;
+    var was = cell && cell.classList.contains('open');
+    closeAll();
+    if (btn && !was) {
+      cell.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      var drop = cell.querySelector('.drop');
+      if (drop) drop.hidden = false;
+    }
+  });
+
+  if (shouldRestoreUnlockedHome()) restoreUnlockedHome();
+})();
+</script>
+</body>
+</html>
