@@ -370,12 +370,19 @@
 
   #home-blackout[hidden] { display: none; }
 
-  /* Opening red click: keep the red menu circle with the truth quote */
-  body.truth .menu-cell {
-    opacity: 1;
+  /* Same red circle stays through gate → truth → home (never fades out) */
+  body.truth .menu-cell,
+  body.reveal .menu-cell {
+    opacity: 1 !important;
+    visibility: visible !important;
+    animation: none !important;
     z-index: 52;
     pointer-events: none;
-    transition: opacity 900ms ease;
+  }
+
+  body.unlocked:not(.reveal):not(.truth) .menu-cell {
+    z-index: 38;
+    pointer-events: auto;
   }
 
   body.truth .wake-cell,
@@ -406,7 +413,8 @@
     pointer-events: none !important;
   }
 
-  body.reveal .grid .cell {
+  /* Other cells fade in around the persistent red menu circle */
+  body.reveal .grid .cell:not(.menu-cell) {
     animation: home-cell-in 900ms ease both;
   }
 
@@ -1761,10 +1769,11 @@ metaverse economy with ease.</p>
   }
 
   function finishEnterHome() {
+    // Add reveal/unlocked before dropping truth so the red menu circle
+    // never loses its persistent-opacity rules (same element throughout).
+    document.body.classList.add('unlocked', 'reveal');
     document.body.classList.remove('gate', 'truth', 'ending');
     clearWakePortal();
-    document.body.classList.add('unlocked');
-    document.body.classList.add('reveal');
     markHomeUnlocked();
     closeAll();
     layoutHomeQuote();
