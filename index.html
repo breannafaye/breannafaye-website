@@ -857,7 +857,9 @@
 
   .note.holding .note-x { pointer-events: auto; }
 
-  .note.sent .send {
+  .note.sent .send,
+  .note.error .send,
+  .note.sending .send {
     width: auto;
     right: 12px;
     padding: 0 2px;
@@ -869,6 +871,18 @@
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+  }
+
+  .note.error .sent-word { color: #8a3a2a; }
+
+  .note.sending .send { opacity: 0.7; }
+
+  .note-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 
   .email-line {
@@ -923,7 +937,9 @@
   }
 
   .note.sent input,
-  .note.sent textarea { pointer-events: none; }
+  .note.sent textarea,
+  .note.sending input,
+  .note.sending textarea { pointer-events: none; }
 
   .circle.clearing {
     opacity: 0;
@@ -1580,7 +1596,39 @@ metaverse economy with ease.</p>
     note.style.top = top + 'px';
   }
 
-  var NOTE_MAILTO = 'hello@ingredientpals.com';
+  // Post-it → Netlify Function → Resend → breannafaye.eth@gmail.com
+  // Requires site hosted on Netlify with RESEND_API_KEY (and optional RESEND_FROM).
+  var NOTE_SEND_URL = '/.netlify/functions/send-note';
+
+  function setNoteSendState(note, state, label) {
+    var send = note.querySelector('.send');
+    if (!send) return;
+    note.classList.remove('sending', 'sent', 'error');
+    if (state) note.classList.add(state);
+    var fields = note.querySelectorAll('input, textarea');
+    var lock = state === 'sent' || state === 'sending';
+    for (var i = 0; i < fields.length; i++) fields[i].readOnly = lock;
+    send.disabled = state === 'sent' || state === 'sending';
+    send.setAttribute('aria-label', label || 'Send');
+    if (state === 'sent' || state === 'error' || state === 'sending') {
+      send.innerHTML = '<span class="sent-word">' + (label || state) + '</span>';
+    } else {
+      send.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.2 L19.2 5.2 L13.6 19.2 L11 13.2 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+    }
+  }
+
+  function submitPostItNote(payload) {
+    return fetch(NOTE_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error((data && data.error) || ('Send failed (' + res.status + ')'));
+        return data;
+      });
+    });
+  }
 
   function buildNote() {
     var note = document.createElement('article');
@@ -1590,10 +1638,11 @@ metaverse economy with ease.</p>
       '<button type="button" class="send" aria-label="Send">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.2 L19.2 5.2 L13.6 19.2 L11 13.2 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>' +
       '</button>' +
-      '<p class="email-line"><span>To</span><input type="text" value="Breanna" aria-label="To"></p>' +
+      '<p class="email-line"><span>To</span><input type="text" value="Breanna" aria-label="To" readonly></p>' +
       '<p class="email-line"><span>Subject</span><input type="text" value="Hello from breannafaye.com" aria-label="Subject"></p>' +
       '<textarea aria-label="Message"></textarea>' +
-      '<p class="email-line from-line"><span>From</span><input type="text" value="" placeholder="(enter your name)" aria-label="From"></p>';
+      '<p class="email-line from-line"><span>From</span><input type="text" value="" placeholder="(enter your name)" aria-label="From"></p>' +
+      '<input type="text" name="company" class="note-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">';
     note.querySelector('.note-x').addEventListener('click', function (ev) {
       ev.stopPropagation();
       if (heldNote === note) heldNote = null;
@@ -1602,27 +1651,39 @@ metaverse economy with ease.</p>
     });
     note.querySelector('.send').addEventListener('click', function (ev) {
       ev.stopPropagation();
-      if (note.classList.contains('sent')) return;
-      var toField = note.querySelector('[aria-label="To"]');
+      if (note.classList.contains('sent') || note.classList.contains('sending')) return;
       var subjectField = note.querySelector('[aria-label="Subject"]');
       var messageField = note.querySelector('[aria-label="Message"]');
       var fromField = note.querySelector('[aria-label="From"]');
+      var honeypot = note.querySelector('[name="company"]');
       var subject = (subjectField && subjectField.value || '').trim();
       var message = (messageField && messageField.value || '').trim();
       var from = (fromField && fromField.value || '').trim();
-      var body = message;
-      if (from) body += (body ? '\n\n' : '') + 'From: ' + from;
-      var href = 'mailto:' + NOTE_MAILTO +
-        '?subject=' + encodeURIComponent(subject) +
-        '&body=' + encodeURIComponent(body);
-      window.location.href = href;
-      note.classList.add('sent');
-      var fields = note.querySelectorAll('input, textarea');
-      for (var i = 0; i < fields.length; i++) fields[i].readOnly = true;
-      var send = note.querySelector('.send');
-      send.disabled = true;
-      send.setAttribute('aria-label', 'Sent');
-      send.innerHTML = '<span class="sent-word">Sent</span>';
+      if (honeypot && honeypot.value) {
+        setNoteSendState(note, 'sent', 'Sent');
+        return;
+      }
+      if (!message) {
+        if (messageField) messageField.focus();
+        return;
+      }
+      setNoteSendState(note, 'sending', 'Sending');
+      submitPostItNote({
+        from: from,
+        message: message,
+        subject: subject
+      }).then(function () {
+        setNoteSendState(note, 'sent', 'Sent');
+      }).catch(function () {
+        setNoteSendState(note, 'error', 'Retry');
+        note.querySelector('.send').disabled = false;
+        note.querySelector('.send').setAttribute('aria-label', 'Retry');
+        var fields = note.querySelectorAll('input:not(.note-honeypot), textarea');
+        for (var i = 0; i < fields.length; i++) {
+          if (fields[i].getAttribute('aria-label') !== 'To') fields[i].readOnly = false;
+        }
+        note.classList.remove('sending');
+      });
     });
     return note;
   }

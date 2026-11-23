@@ -1,0 +1,20 @@
+# Deploy this site on Netlify (preferred) so post-it → Resend works on breannafaye.com.
+# Site root is this folder (repo root after publish sync).
+#
+# Setup:
+# 1. Connect GitHub repo breannafaye/breannafaye-website to Netlify
+# 2. Site settings → Environment variables → add RESEND_API_KEY
+# 3. Optional: RESEND_FROM = "Breanna Faye <notes@breannafaye.com>" (after verifying domain in Resend)
+# 4. Point breannafaye.com DNS to Netlify (or use Netlify DNS) so /.netlify/functions/* works on the custom domain
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
