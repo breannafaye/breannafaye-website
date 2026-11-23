@@ -370,13 +370,26 @@
 
   #home-blackout[hidden] { display: none; }
 
-  body.truth .menu-cell,
+  /* Opening red click: keep the red menu circle with the truth quote */
+  body.truth .menu-cell {
+    opacity: 1;
+    z-index: 52;
+    pointer-events: none;
+    transition: opacity 900ms ease;
+  }
+
   body.truth .wake-cell,
   body.ending .menu-cell,
   body.ending .wake-cell {
     opacity: 0;
     transition: opacity 900ms ease;
     pointer-events: none;
+  }
+
+  /* Leave space so the centered quote stays clear of the red circle */
+  body.truth #home-truth {
+    justify-content: center;
+    padding-top: calc(var(--d) * 1.15 + var(--gap) + 3vh);
   }
 
   body.truth .grid .cell:not(.menu-cell):not(.wake-cell) {
